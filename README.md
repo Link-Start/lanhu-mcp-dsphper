@@ -281,7 +281,6 @@ docker-compose down              # 停止
 > - `name`: 用户姓名（用于协作追踪和 @提醒）
 > - ⚠️ **注意**：部分 AI 开发工具不支持 URL 中使用中文参数值，建议使用英文
 
-**扫码加入微信群交流**
 <p align="center"><img src="images/wechat.jpg" alt="微信群二维码" width="400" /></p>
 
 ## 🎯 团队留言板：突破 AI 协作的最后一公里
