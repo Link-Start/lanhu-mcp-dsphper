@@ -21,3 +21,8 @@ data/
 .DS_Store
 .idea/
 .vscode/
+
+# Local runtime logs
+lanhu-mcp-run.log
+lanhu-mcp.log
+.omx/

@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>小悦云APP - 首页进入学院中心</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0D0E1A;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  h1 {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    color: #878B96;
+    font-size: 12px;
+    margin-bottom: 32px;
+  }
+
+  /* iPhone 外框 */
+  .phone-frame {
+    position: relative;
+    width: 375px;
+    height: 812px;
+    background: #0D0E1A;
+    overflow: hidden;
+    border-radius: 44px;
+    border: 2px solid #2A304F;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 8px #0D0E1A;
+    flex-shrink: 0;
+  }
+
+  /* 动态岛 */
+  .notch {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 34px;
+    background: #0D0E1A;
+    border-radius: 20px;
+    z-index: 10;
+  }
+
+  /* 顶部渐变区域 */
+  .top-gradient {
+    position: absolute;
+    top: 0; left: 0;
+    width: 375px;
+    height: 389px;
+    background: linear-gradient(180deg, #131E35 0%, #1C2B47 50%, #020120 100%);
+    z-index: 1;
+  }
+
+  /* 左上角椭圆装饰 */
+  .oval-left {
+    position: absolute;
+    top: 0; left: 99.5px;
+    width: 178.5px;
+    height: 108px;
+    background: #228E80;
+    border-radius: 50%;
+    opacity: 0.7;
+    z-index: 2;
+  }
+
+  /* 右上角椭圆装饰 */
+  .oval-right {
+    position: absolute;
+    top: 0; left: 99.5px;
+    width: 178.5px;
+    height: 108px;
+    background: #228E80;
+    border-radius: 50%;
+    opacity: 0.7;
+    z-index: 2;
+  }
+
+  /* 视频卡片容器（顶部区域） */
+  .video-cards-area {
+    position: absolute;
+    top: 60px;
+    left: 0; right: 0;
+    height: 460px;
+    z-index: 3;
+  }
+
+  /* 单个卡片 */
+  .video-card {
+    position: absolute;
+    width: 172.5px;
+    height: 230px;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .video-card.left  { left: 12px;  top: 0; }
+  .video-card.right { right: 12px; top: 0; }
+
+  /* 卡片背景 */
+  .card-bg {
+    position: absolute;
+    inset: 0;
+    background: #414D69;
+    border-radius: 10px;
+  }
+  .card-bg.grey { background: #B8BAB9; }
+
+  /* 卡片顶部渐变遮罩 */
+  .card-top-grad {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 40px;
+    border-radius: 10px 10px 0 0;
+  }
+
+  /* 视频图片 */
+  .card-img {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+
+  /* 视频删除警告文字 */
+  .card-warning {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    right: 10px;
+    font-size: 10pt;
+    color: #FFFFFF;
+    line-height: 13pt;
+  }
+
+  /* 播放按钮 */
+  .play-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 28px; height: 28px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .play-btn svg { width: 12px; height: 12px; }
+
+  /* 更多按钮 */
+  .more-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 8px;
+    width: 10px; height: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* 卡片底部渐变条 */
+  .card-bottom-grad {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 56.5px;
+    background: linear-gradient(to top, #2D2C2C 0%, transparent 100%);
+  }
+
+  /* 卡片底部文字 */
+  .card-title {
+    position: absolute;
+    font-size: 11pt;
+    font-weight: 500;
+    color: #FFFFFF;
+  }
+  .card-time {
+    position: absolute;
+    font-size: 10pt;
+    color: #CFD2DA;
+  }
+
+  /* 左侧标签（数字人视频/开始创作） */
+  .left-card-label {
+    position: absolute;
+    font-size: 15pt;
+    font-weight: 400;
+    color: #F9FEFF;
+    white-space: nowrap;
+  }
+
+  .left-card-sub {
+    position: absolute;
+    font-size: 11pt;
+    color: #878B96;
+    white-space: nowrap;
+  }
+
+  .create-btn {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 14px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 16px;
+    font-size: 13pt;
+    color: #FFFFFF;
+    font-weight: 400;
+  }
+
+  /* Tab Bar */
+  .tab-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 82.5px;
+    background: #202138;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    padding-top: 8px;
+    z-index: 5;
+  }
+
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+
+  .tab-icon-wrap {
+    width: 20px;
+    height: 20px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .tab-icon-bg {
+    position: absolute;
+    width: 20px; height: 20px;
+    background: #000;
+    border-radius: 4px;
+  }
+
+  .tab-label {
+    font-size: 11pt;
+    color: #7F8892;
+  }
+  .tab-label.active { color: #00CBE0; }
+
+  /* AI 水印 */
+  .ai-watermark {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10pt;
+    color: #6E6E6F;
+    white-space: nowrap;
+  }
+
+  /* 底部选中指示条 */
+  .tab-indicator {
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px; height: 3.5px;
+    background: #24EAEF;
+    border-radius: 2px;
+  }
+
+  /* 标注辅助线（开发调试用，默认隐藏） */
+  .debug-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    display: none;
+  }
+  .debug-grid.show { display: block; }
+  .debug-grid .hline {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: rgba(255,0,0,0.3);
+  }
+  .debug-grid .vline {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: rgba(0,0,255,0.3);
+  }
+
+  /* 右侧面板 */
+  .right-panel {
+    width: 340px;
+    flex-shrink: 0;
+    background: #13162A;
+    border-radius: 16px;
+    padding: 20px;
+    color: #fff;
+    max-height: 812px;
+    overflow-y: auto;
+    border: 1px solid #2A304F;
+  }
+  .right-panel h2 {
+    font-size: 14px;
+    color: #00CBE0;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #2A304F;
+  }
+  .panel-section {
+    margin-bottom: 14px;
+  }
+  .panel-section-title {
+    font-size: 11px;
+    color: #7F8892;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .layer-card {
+    background: #1A1D2E;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-left: 3px solid #2A304F;
+  }
+  .layer-card.highlight { border-left-color: #00CBE0; }
+  .layer-card-name {
+    font-size: 13px;
+    color: #F9FEFF;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .layer-card-props {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .prop {
+    font-size: 11px;
+    color: #CFD2DA;
+  }
+  .prop-label { color: #7F8892; }
+  .prop-val.color { color: #00CBE0; }
+  .prop-val.gradient { color: #543EEA; }
+  .prop-val.br { color: #24EAEF; }
+
+  /* 布局 */
+  .main-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  .layout-title {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  /* 按钮 */
+  .debug-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    z-index: 999;
+  }
+  .debug-toggle:hover { background: rgba(255,255,255,0.2); }
+
+  /* Scrollable */
+  .preview-area {
+    overflow-y: auto;
+    max-height: calc(100vh - 80px);
+  }
+</style>
+</head>
+<body>
+
+<button class="debug-toggle" onclick="document.querySelector('.debug-grid').classList.toggle('show')">
+  辅助线
+</button>
+
+<h1>小悦云APP · 首页</h1>
+<p class="subtitle">iOS 375×812pt · 蓝湖标注数据还原 · 共 113 个控件</p>
+
+<div class="main-layout">
+  <!-- ========== 左侧：iPhone 模拟器 ========== -->
+  <div class="preview-area">
+  <div class="phone-frame" id="phone">
+
+    <!-- 动态岛 -->
+    <div class="notch"></div>
+
+    <!-- 顶部渐变区域 -->
+    <div class="top-gradient"></div>
+
+    <!-- 左上角椭圆装饰 -->
+    <div class="oval-left"></div>
+
+    <!-- 视频卡片区 -->
+    <div class="video-cards-area">
+
+      <!-- ===== 左侧卡片：数字人视频 ===== -->
+      <div class="video-card left" style="position:absolute; left:12px; top:0px;">
+
+        <!-- 背景 -->
+        <div class="card-bg"></div>
+
+        <!-- 图片（位图） -->
+        <img class="card-img"
+             src="https://img.freepik.com/free-photo/video-placeholder-with-play-button_1101-1272.jpg?w=400"
+             alt="数字人视频"
+             style="opacity:0.3;filter:grayscale(1);"/>
+
+        <!-- 标签区 -->
+        <div style="position:absolute; top:0; left:0; right:0; height:60px; padding:12px 12px 0; display:flex; flex-direction:column; gap:8px;">
+          <!-- 数字人视频标签 -->
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div style="background:#2A304F; border-radius:5px; padding:2px 6px; font-size:10pt; color:#F9FEFF; font-weight:400;">数字人视频</div>
+          </div>
+          <!-- 开始创作按钮 -->
+          <div style="display:flex; align-items:center;">
+            <div style="border:1px solid rgba(255,255,255,0.3); border-radius:16px; padding:3px 12px; font-size:13pt; color:#FFFFFF;">开始创作</div>
+          </div>
+          <!-- 上传提示 -->
+          <div style="font-size:11pt; color:#878B96; margin-top:2px;">请上传您的作品</div>
+        </div>
+
+      </div>
+
+      <!-- ===== 右侧卡片：真人原声 ===== -->
+      <div class="video-card right" style="position:absolute; right:12px; top:0px;">
+
+        <!-- 背景（灰色占位） -->
+        <div class="card-bg grey"></div>
+
+        <!-- 顶部渐变遮罩 -->
+        <div class="card-top-grad" style="background:linear-gradient(to top, rgba(45,44,44,0.9) 0%, transparent 100%);"></div>
+
+        <!-- 图片占位 -->
+        <img class="card-img"
+             src="https://via.placeholder.com/172x230/555/333?text=Video"
+             alt="真人原声"
+             style="opacity:0.4;filter:grayscale(0.8);"/>
+
+        <!-- 警告文字 -->
+        <div class="card-warning">
+          <span style="font-size:10pt; color:#FFFFFF; background:linear-gradient(to right, #FFFFFF, #FF4036, #FFFFFF); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:400;">
+            该视频将于23小时11分钟以后自动清除，
+          </span>
+        </div>
+
+        <!-- 播放按钮 -->
+        <div class="play-btn" style="position:absolute; bottom:8px; right:8px;">
+          <svg viewBox="0 0 12 12" fill="white"><polygon points="2,1 11,6 2,11"/></svg>
+        </div>
+
+        <!-- 更多按钮 -->
+        <div class="more-btn" style="position:absolute; bottom:12px; right:50px;">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="#878B96">
+            <circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/><circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/>
+          </svg>
+        </div>
+
+        <!-- 底部渐变条 -->
+        <div class="card-bottom-grad"></div>
+
+        <!-- 底部文字 -->
+        <div style="position:absolute; bottom:10px; left:10px; right:10px;">
+          <div style="font-size:11pt; font-weight:500; color:#FFFFFF; margin-bottom:2px;">一句话成片</div>
+          <div style="font-size:10pt; color:#CFD2DA;">2025-08-06 12:00:04</div>
+        </div>
+      </div>
+
+      <!-- ===== 第二行：左侧卡片 ===== -->
+      <div class="video-card left" style="position:absolute; left:12px; top:236px;">
+        <div class="card-bg"></div>
+        <div class="card-top-grad" style="background:linear-gradient(to top, rgba(45,44,44,0.9) 0%, transparent 100%);"></div>
+        <div class="card-warning" style="top:8px; left:10px;">
+          <span style="font-size:10pt; color:#FFFFFF; background:linear-gradient(to right, #FFFFFF, #FF4036, #FFFFFF); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">该视频将于23小时11分钟以后自动清除，</span>
+        </div>
+        <div class="play-btn" style="bottom:8px; right:8px;"><svg viewBox="0 0 12 12" fill="white"><polygon points="2,1 11,6 2,11"/></svg></div>
+        <div class="more-btn" style="bottom:12px; right:50px;"><svg width="10" height="10" viewBox="0 0 10 10" fill="#878B96"><circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/><circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/></svg></div>
+        <div class="card-bottom-grad"></div>
+        <div style="position:absolute; bottom:10px; left:10px; right:10px;">
+          <div style="font-size:11pt; font-weight:500; color:#FFFFFF; margin-bottom:2px;">一句话成片</div>
+          <div style="font-size:10pt; color:#CFD2DA;">2025-08-06 12:00:04</div>
+        </div>
+      </div>
+
+      <!-- ===== 第二行：右侧卡片 ===== -->
+      <div class="video-card right" style="position:absolute; right:12px; top:236px;">
+        <div class="card-bg grey"></div>
+        <div class="card-top-grad" style="background:linear-gradient(to top, rgba(45,44,44,0.9) 0%, transparent 100%);"></div>
+        <div class="card-warning" style="top:8px; left:10px;">
+          <span style="font-size:10pt; color:#FFFFFF; background:linear-gradient(to right, #FFFFFF, #FF4036, #FFFFFF); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">该视频将于23小时11分钟以后自动清除，</span>
+        </div>
+        <div class="play-btn" style="bottom:8px; right:8px;"><svg viewBox="0 0 12 12" fill="white"><polygon points="2,1 11,6 2,11"/></svg></div>
+        <div class="more-btn" style="bottom:12px; right:50px;"><svg width="10" height="10" viewBox="0 0 10 10" fill="#878B96"><circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/><circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/></svg></div>
+        <div class="card-bottom-grad"></div>
+        <div style="position:absolute; bottom:10px; left:10px; right:10px;">
+          <div style="font-size:11pt; font-weight:500; color:#FFFFFF; margin-bottom:2px;">一张图成片</div>
+          <div style="font-size:10pt; color:#CFD2DA;">2025-08-06 12:00:04</div>
+        </div>
+      </div>
+
+    </div><!-- /video-cards-area -->
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+
+      <!-- 首页 tab -->
+      <div class="tab-item" style="width:50px; align-items:center;">
+        <div style="position:relative; width:20px; height:20px;">
+          <div class="tab-indicator" style="top:-4px;"></div>
+          <div class="tab-icon-bg" style="background:#000;"></div>
+          <!-- 首页图标 SVG -->
+          <svg style="position:absolute; top:3px; left:4.5px;" width="11" height="14" viewBox="0 0 11 14" fill="none">
+            <path d="M5.5 1L0.5 6V13H4V9H7V13H10.5V6L5.5 1Z" fill="#7F8892"/>
+          </svg>
+        </div>
+        <div class="tab-label" style="font-size:11pt; color:#7F8892;">首页</div>
+      </div>
+
+      <!-- 智能体 tab -->
+      <div class="tab-item" style="width:50px; align-items:center;">
+        <div style="position:relative; width:20px; height:20px;">
+          <div class="tab-icon-bg" style="background:#000;"></div>
+          <!-- 智能体图标 -->
+          <svg style="position:absolute; top:2px; left:4px;" width="12" height="16" viewBox="0 0 12 16" fill="none">
+            <rect x="0.5" y="7.5" width="11" height="7.5" rx="1.5" fill="#7F8892"/>
+            <circle cx="6" cy="3.5" r="3" fill="#7F8892"/>
+          </svg>
+        </div>
+        <div class="tab-label" style="font-size:11pt; color:#7F8892;">智能体</div>
+      </div>
+
+      <!-- 创作 tab（选中状态） -->
+      <div class="tab-item" style="width:50px; align-items:center;">
+        <div style="position:relative; width:20px; height:20px;">
+          <div class="tab-indicator" style="top:-4px;"></div>
+          <div class="tab-icon-bg" style="background:#000;"></div>
+          <!-- 创作+图标 -->
+          <svg style="position:absolute; top:3px; left:3px;" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="0.5" y="0.5" width="13" height="13" rx="3" stroke="#543EEA" stroke-width="1" fill="none"/>
+            <line x1="7" y1="4" x2="7" y2="10" stroke="#543EEA" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="4" y1="7" x2="10" y2="7" stroke="#543EEA" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="tab-label active" style="font-size:11pt; color:#00CBE0;">创作</div>
+      </div>
+
+      <!-- 作品 tab（选中状态，当前页面） -->
+      <div class="tab-item" style="width:50px; align-items:center;">
+        <div style="position:relative; width:20px; height:20px;">
+          <div class="tab-indicator" style="top:-4px;"></div>
+          <div class="tab-icon-bg" style="background:#000;"></div>
+          <!-- 作品图标 -->
+          <svg style="position:absolute; top:3px; left:3px;" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="1" y="3" width="12" height="10" rx="2" stroke="#543EEA" stroke-width="1" fill="none"/>
+            <path d="M1 6L4.5 9L7 6.5L9.5 9L13 5.5" stroke="#543EEA" stroke-width="1" fill="none"/>
+          </svg>
+        </div>
+        <div class="tab-label active" style="font-size:11pt; color:#00CBE0;">作品区</div>
+      </div>
+
+      <!-- 我的 tab -->
+      <div class="tab-item" style="width:50px; align-items:center;">
+        <div style="position:relative; width:20px; height:20px;">
+          <div class="tab-icon-bg" style="background:#000;"></div>
+          <!-- 我的图标 -->
+          <svg style="position:absolute; top:3px; left:5px;" width="10" height="14" viewBox="0 0 10 14" fill="none">
+            <circle cx="5" cy="3.5" r="2.5" fill="#7F8892"/>
+            <path d="M1 13C1 10.5 2.5 9 5 9C7.5 9 9 10.5 9 13" fill="#7F8892"/>
+          </svg>
+        </div>
+        <div class="tab-label" style="font-size:11pt; color:#7F8892;">我的</div>
+      </div>
+
+    </div><!-- /tab-bar -->
+
+    <!-- AI 水印 -->
+    <div class="ai-watermark">作品由AI生成</div>
+
+    <!-- 调试网格 -->
+    <div class="debug-grid" id="debugGrid">
+      <div class="hline" style="top:100px;"></div>
+      <div class="hline" style="top:200px;"></div>
+      <div class="hline" style="top:300px;"></div>
+      <div class="hline" style="top:400px;"></div>
+      <div class="hline" style="top:500px;"></div>
+      <div class="hline" style="top:600px;"></div>
+      <div class="hline" style="top:700px;"></div>
+      <div class="vline" style="left:100px;"></div>
+      <div class="vline" style="left:200px;"></div>
+      <div class="vline" style="left:300px;"></div>
+    </div>
+
+  </div><!-- /phone-frame -->
+  </div><!-- /preview-area -->
+
+  <!-- ========== 右侧：控件清单面板 ========== -->
+  <div class="right-panel">
+    <h2>控件清单 (113个)</h2>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Canvas</div>
+      <div class="layer-card">
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">尺寸: </span><span>375pt × 812pt</span></div>
+          <div class="prop"><span class="prop-label">倍率: </span><span>iOS @2x</span></div>
+          <div class="prop"><span class="prop-label">像素: </span><span>750px × 1624px</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">顶部渐变区 (y: 0–389pt)</div>
+      <div class="layer-card">
+        <div class="layer-card-name">顶部渐变背景</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:0pt  y:0pt</span></div>
+          <div class="prop"><span class="prop-label">大小: </span><span>375pt × 389pt</span></div>
+          <div class="prop"><span class="prop-label">类型: </span><span class="prop-val gradient">3色渐变</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val gradient">#131E35→#1C2B47→#020120</span></div>
+        </div>
+      </div>
+      <div class="layer-card">
+        <div class="layer-card-name">椭圆形装饰</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:99.5pt  y:0pt</span></div>
+          <div class="prop"><span class="prop-label">大小: </span><span>178.5pt × 108pt</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#228E80</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">视频卡片 × 4 (y: 0–466pt)</div>
+
+      <div class="layer-card highlight">
+        <div class="layer-card-name">数字人视频 标签</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:24pt  y:100.5pt</span></div>
+          <div class="prop"><span class="prop-label">字号: </span><span>15pt</span></div>
+          <div class="prop"><span class="prop-label">字体: </span><span>苹方-简 常规体</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#F9FEFF</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">开始创作 按钮</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:72.5pt  y:258pt</span></div>
+          <div class="prop"><span class="prop-label">字号: </span><span>13pt</span></div>
+          <div class="prop"><span class="prop-label">字体: </span><span>苹方-简 常规体</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#FFFFFF</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">左侧卡片背景</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:12pt  y:139pt</span></div>
+          <div class="prop"><span class="prop-label">大小: </span><span>172.5pt × 230pt</span></div>
+          <div class="prop"><span class="prop-label">圆角: </span><span class="prop-val br">10pt</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#414D69</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">右侧卡片背景</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:190.5pt  y:139pt</span></div>
+          <div class="prop"><span class="prop-label">大小: </span><span>172.5pt × 230pt</span></div>
+          <div class="prop"><span class="prop-label">圆角: </span><span class="prop-val br">10pt</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#B8BAB9</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">卡片顶部渐变条（删除警告）</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:200.5pt  y:147pt</span></div>
+          <div class="prop"><span class="prop-label">字号: </span><span>10pt</span></div>
+          <div class="prop"><span class="prop-label">类型: </span><span class="prop-val gradient">3色渐变</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val gradient">#FFFFFF→#FF4036→#FFFFFF</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">卡片底部渐变条</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:190.5pt  y:312.5pt</span></div>
+          <div class="prop"><span class="prop-label">大小: </span><span>172.5pt × 56.5pt</span></div>
+          <div class="prop"><span class="prop-label">类型: </span><span class="prop-val gradient">5色渐变</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val gradient">#2D2C2C→...→#2B2D30</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">一句话成片 文字</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:200.5pt  y:328pt</span></div>
+          <div class="prop"><span class="prop-label">字号: </span><span>11pt</span></div>
+          <div class="prop"><span class="prop-label">字体: </span><span>苹方-简 中黑体 Medium</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#FFFFFF</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">视频时间 文字</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:200.5pt  y:347pt</span></div>
+          <div class="prop"><span class="prop-label">字号: </span><span>10pt</span></div>
+          <div class="prop"><span class="prop-label">字体: </span><span>苹方-简 常规体 Regular</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#CFD2DA</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">播放按钮</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:263pt  y:240pt</span></div>
+          <div class="prop"><span class="prop-label">大小: </span><span>28pt × 28pt</span></div>
+          <div class="prop"><span class="prop-label">形状: </span><span>圆形</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Tab Bar 底部导航 (y: 729.5–812pt)</div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">Tab Bar 背景</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:0pt  y:729.5pt</span></div>
+          <div class="prop"><span class="prop-label">大小: </span><span>375pt × 82.5pt</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#202138</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">作品区 Tab（选中）</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:219pt  y:757.5pt</span></div>
+          <div class="prop"><span class="prop-label">字号: </span><span>11pt</span></div>
+          <div class="prop"><span class="prop-label">字体: </span><span>苹方-简 常规体</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#00CBE0</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">创作 Tab（选中）</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:121.5pt  y:757.5pt</span></div>
+          <div class="prop"><span class="prop-label">字号: </span><span>11pt</span></div>
+          <div class="prop"><span class="prop-label">字体: </span><span>苹方-简 常规体</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#00CBE0</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">Tab 图标 选中条</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:226pt  y:735.5pt</span></div>
+          <div class="prop"><span class="prop-label">大小: </span><span>20pt × 20pt</span></div>
+          <div class="prop"><span class="prop-label">圆角: </span><span class="prop-val br">2.5pt</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#000000</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">首页 Tab</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:35pt  y:757.5pt</span></div>
+          <div class="prop"><span class="prop-label">字号: </span><span>11pt</span></div>
+          <div class="prop"><span class="prop-label">字体: </span><span>苹方-简 常规体</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#7F8892</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">我的 Tab</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:317pt  y:757.5pt</span></div>
+          <div class="prop"><span class="prop-label">字号: </span><span>11pt</span></div>
+          <div class="prop"><span class="prop-label">字体: </span><span>苹方-简 常规体</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#7F8892</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">智能体 Tab</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:121.5pt  y:757.5pt</span></div>
+          <div class="prop"><span class="prop-label">字号: </span><span>11pt</span></div>
+          <div class="prop"><span class="prop-label">字体: </span><span>苹方-简 常规体</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#7F8892</span></div>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="layer-card-name">AI生成水印</div>
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">位置: </span><span>x:158pt  y:711.5pt</span></div>
+          <div class="prop"><span class="prop-label">字号: </span><span>10pt</span></div>
+          <div class="prop"><span class="prop-label">字体: </span><span>苹方-简 常规体</span></div>
+          <div class="prop"><span class="prop-label">颜色: </span><span class="prop-val color">#6E6E6F</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">统计</div>
+      <div class="layer-card">
+        <div class="layer-card-props">
+          <div class="prop"><span class="prop-label">总控件: </span><span>113个</span></div>
+          <div class="prop"><span class="prop-label">有效标注: </span><span>87个</span></div>
+          <div class="prop"><span class="prop-label">有渐变: </span><span>17个</span></div>
+          <div class="prop"><span class="prop-label">有圆角: </span><span>10个</span></div>
+          <div class="prop"><span class="prop-label">有字体: </span><span>24个</span></div>
+          <div class="prop"><span class="prop-label">有颜色: </span><span>73个</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /right-panel -->
+
+</div><!-- /main-layout -->
+
+</body>
+</html>

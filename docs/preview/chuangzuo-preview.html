@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小悦云APP · 创作区</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #080A14;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 60px;
+    font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  }
+  h1 { color: #fff; font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .sub { color: #7F8892; font-size: 12px; margin-bottom: 28px; }
+
+  .phone-frame {
+    position: relative;
+    width: 375px;
+    height: 906pt;
+    background: #0D0E1A;
+    overflow: hidden;
+    border-radius: 44px;
+    border: 2px solid #2A304F;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 0 6px #0D0E1A;
+    flex-shrink: 0;
+  }
+
+  .top-grad-wrap {
+    position: absolute;
+    top: 0; left: 0;
+    width: 375px; height: 389px;
+    background: linear-gradient(180deg, #131E35 0%, #1C2B47 48%, #020120 100%);
+    z-index: 1;
+  }
+  .top-oval {
+    position: absolute;
+    top: 0; left: 99.5px;
+    width: 178.5px; height: 108px;
+    background: #228E80;
+    border-radius: 50%;
+    opacity: 0.65;
+    z-index: 2;
+  }
+  .top-statusbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 44px;
+    z-index: 3;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 28px 6px;
+  }
+  .status-time { font-size: 14px; font-weight: 600; color: #fff; }
+
+  .welcome-area {
+    position: absolute;
+    top: 76px; left: 0; right: 0;
+    padding: 0 12px;
+    z-index: 3;
+  }
+  .welcome-text {
+    font-size: 13pt;
+    color: #FFFFFF;
+    line-height: 18.5pt;
+    padding: 6px 8px;
+  }
+
+  .cards-area { position: absolute; top: 116px; left: 0; right: 0; z-index: 3; }
+
+  .func-card {
+    position: absolute;
+    left: 8px;
+    width: 359px;
+    height: 90px;
+    background: #191C2A;
+    border-radius: 17px;
+    display: flex;
+    align-items: center;
+    padding: 0 11px;
+  }
+  .card-icon-wrap {
+    width: 84px; height: 84px;
+    border-radius: 17px;
+    background: linear-gradient(135deg, #543EEA 0%, #00CBE0 100%);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .card-text-area {
+    flex: 1;
+    display: flex; flex-direction: column;
+    justify-content: center;
+    padding-left: 20px;
+    gap: 8px;
+  }
+  .card-title-main {
+    font-size: 14pt; font-weight: 400; color: #FFFFFF; line-height: 20pt;
+  }
+  .card-desc {
+    font-size: 14pt; font-weight: 400; color: #888B97; line-height: 20pt;
+  }
+  .card-arrow {
+    width: 12px; height: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .tab-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 82.5px;
+    background: #202138;
+    display: flex; align-items: flex-start;
+    justify-content: space-around;
+    padding-top: 10px;
+    z-index: 5;
+  }
+  .tab-item {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 5px; position: relative;
+  }
+  .tab-icon-wrap {
+    width: 20px; height: 20px;
+    position: relative; display: flex; align-items: center; justify-content: center;
+  }
+  .tab-icon-bg {
+    position: absolute; width: 20px; height: 20px;
+    background: #000; border-radius: 5px;
+  }
+  .tab-label { font-size: 11pt; color: #7F8892; }
+  .tab-label.active { color: #00CBE0; }
+  .tab-indicator {
+    position: absolute; top: -6px; left: 50%;
+    transform: translateX(-50%);
+    width: 18px; height: 3px;
+    background: #00CBE0; border-radius: 2px;
+  }
+
+  .safe-bar {
+    position: absolute;
+    bottom: 12px; left: 120.5pt;
+    width: 134px; height: 5pt;
+    background: #FFFFFF;
+    border-radius: 2.5px;
+  }
+
+  .main-layout { display: flex; gap: 20px; align-items: flex-start; }
+
+  .right-panel {
+    width: 320px; flex-shrink: 0;
+    background: #0F1220; border-radius: 14px;
+    padding: 16px; color: #fff;
+    max-height: 906px; overflow-y: auto;
+    border: 1px solid #1E2235; font-size: 12px;
+  }
+  .rp-title { font-size: 13px; color: #00CBE0; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #1E2235; font-weight: 600; }
+  .rp-section { margin-bottom: 14px; }
+  .rp-section-label { font-size: 10px; color: #7F8892; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+  .layer-card { background: #161929; border-radius: 7px; padding: 8px 10px; margin-bottom: 6px; border-left: 3px solid #2A304F; }
+  .layer-card.selected { border-left-color: #00CBE0; }
+  .lc-name { font-size: 12px; color: #F9FEFF; font-weight: 500; margin-bottom: 3px; }
+  .lc-props { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; }
+  .prop { font-size: 10px; color: #CFD2DA; }
+  .pl { color: #7F8892; }
+  .pv-color { color: #00CBE0; }
+  .pv-grad { color: #543EEA; }
+  .pv-br { color: #24EAEF; }
+
+  .preview-wrap { overflow-y: auto; max-height: calc(100vh - 80px); }
+
+  .grid { position: absolute; inset: 0; pointer-events: none; z-index: 100; display: none; }
+  .grid.show { display: block; }
+  .grid .hl { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255,0,0,0.25); }
+  .grid .vl { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(0,0,255,0.25); }
+  .debug-btn { position: fixed; top: 16px; right: 16px; background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 5px 14px; border-radius: 20px; cursor: pointer; font-size: 11px; z-index: 999; }
+  .right-panel::-webkit-scrollbar { width: 4px; }
+  .right-panel::-webkit-scrollbar-thumb { background: #2A304F; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<button class="debug-btn" onclick="document.querySelector('.grid').classList.toggle('show')">辅助线</button>
+
+<h1>小悦云APP · 创作区</h1>
+<p class="sub">iOS 375×906pt · 蓝湖标注数据还原 · 106个控件</p>
+
+<div class="main-layout">
+
+  <div class="preview-wrap">
+  <div class="phone-frame" id="phone">
+
+    <div class="top-grad-wrap"></div>
+    <div class="top-oval"></div>
+
+    <!-- 状态栏 -->
+    <div class="top-statusbar">
+      <div class="status-time">9:41</div>
+      <div style="display:flex;align-items:center;gap:5px;">
+        <svg width="14" height="10" viewBox="0 0 14 10"><rect x="0" y="6" width="2" height="4" rx="0.5" fill="rgba(255,255,255,0.7)"/><rect x="4" y="4" width="2" height="6" rx="0.5" fill="rgba(255,255,255,0.7)"/><rect x="8" y="2" width="2" height="8" rx="0.5" fill="rgba(255,255,255,0.7)"/><rect x="12" y="0" width="2" height="10" rx="0.5" fill="rgba(255,255,255,0.7)"/></svg>
+        <svg width="14" height="10" viewBox="0 0 14 10"><path d="M7 9L1 3.5M7 9L13 3.5M7 9A2 2 0 0 0 7 5" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>
+        <svg width="20" height="10" viewBox="0 0 20 10"><rect x="0" y="1" width="17" height="8" rx="2" stroke="rgba(255,255,255,0.7)" stroke-width="1" fill="none"/><rect x="1.5" y="2" width="12" height="6" rx="1" fill="rgba(255,255,255,0.8)"/><path d="M17 3.5L19 5L17 6.5" fill="rgba(255,255,255,0.7)"/></svg>
+      </div>
+    </div>
+
+    <!-- 欢迎语 -->
+    <div class="welcome-area">
+      <div class="welcome-text">您好，我是小悦悦，让我们一起开始创作吧！</div>
+    </div>
+
+    <!-- 7个功能卡片 -->
+    <div class="cards-area">
+
+      <!-- [1] 形象克隆 y=130.5 -->
+      <div class="func-card" style="top:130.5px;">
+        <div class="card-icon-wrap">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="14" r="8" fill="rgba(255,255,255,0.9)"/>
+            <path d="M6 36C6 28 12 22 20 22C28 22 34 28 34 36" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <circle cx="31" cy="9" r="6" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" fill="none"/>
+            <path d="M31 6V12M28 9H34" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-text-area">
+          <div class="card-title-main">形象克隆</div>
+          <div class="card-desc">数字人形象克隆</div>
+        </div>
+        <div class="card-arrow">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6H10M10 6L6 2M10 6L6 10" stroke="#7F8892" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <!-- [2] 声音克隆 y=228.5 -->
+      <div class="func-card" style="top:228.5px;">
+        <div class="card-icon-wrap">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <rect x="6" y="17" width="4" height="10" rx="2" fill="rgba(255,255,255,0.9)"/>
+            <rect x="13" y="12" width="4" height="20" rx="2" fill="rgba(255,255,255,0.9)"/>
+            <rect x="20" y="8" width="4" height="28" rx="2" fill="rgba(255,255,255,0.9)"/>
+            <rect x="27" y="14" width="4" height="16" rx="2" fill="rgba(255,255,255,0.9)"/>
+            <rect x="34" y="18" width="2" height="8" rx="1" fill="rgba(255,255,255,0.9)"/>
+          </svg>
+        </div>
+        <div class="card-text-area">
+          <div class="card-title-main">声音克隆</div>
+          <div class="card-desc">数字人声音克隆</div>
+        </div>
+        <div class="card-arrow">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6H10M10 6L6 2M10 6L6 10" stroke="#7F8892" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <!-- [3] 视频合成 y=326.5 -->
+      <div class="func-card" style="top:326.5px;">
+        <div class="card-icon-wrap">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <rect x="4" y="8" width="22" height="20" rx="3" fill="rgba(255,255,255,0.9)"/>
+            <path d="M26 14L36 9V25L26 20Z" fill="rgba(255,255,255,0.9)"/>
+          </svg>
+        </div>
+        <div class="card-text-area">
+          <div class="card-title-main">视频合成</div>
+          <div class="card-desc">数字人视频合成</div>
+        </div>
+        <div class="card-arrow">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6H10M10 6L6 2M10 6L6 10" stroke="#7F8892" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <!-- [4] 视频创作 y=424.5 -->
+      <div class="func-card" style="top:424.5px;">
+        <div class="card-icon-wrap">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <rect x="6" y="6" width="28" height="28" rx="5" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" fill="none"/>
+            <line x1="20" y1="13" x2="20" y2="27" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="13" y1="20" x2="27" y2="20" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-text-area">
+          <div class="card-title-main">视频创作</div>
+          <div class="card-desc">真人原声视频制作</div>
+        </div>
+        <div class="card-arrow">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6H10M10 6L6 2M10 6L6 10" stroke="#7F8892" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <!-- [5] 视频创意师 y=522.5 -->
+      <div class="func-card" style="top:522.5px;">
+        <div class="card-icon-wrap">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <rect x="5" y="22" width="7" height="13" rx="2.5" fill="rgba(255,255,255,0.9)"/>
+            <rect x="16" y="15" width="7" height="20" rx="2.5" fill="rgba(255,255,255,0.9)"/>
+            <rect x="27" y="8" width="7" height="27" rx="2.5" fill="rgba(255,255,255,0.9)"/>
+          </svg>
+        </div>
+        <div class="card-text-area">
+          <div class="card-title-main">视频创意师</div>
+          <div class="card-desc">智能化生成行业专属视频</div>
+        </div>
+        <div class="card-arrow">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6H10M10 6L6 2M10 6L6 10" stroke="#7F8892" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <!-- [6] 图文设计师 y=620.5 -->
+      <div class="func-card" style="top:620.5px;">
+        <div class="card-icon-wrap">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <path d="M20 6L34 13V27L20 34L6 27V13L20 6Z" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" fill="none"/>
+            <circle cx="20" cy="20" r="6" fill="rgba(255,255,255,0.9)"/>
+          </svg>
+        </div>
+        <div class="card-text-area">
+          <div class="card-title-main">图文设计师</div>
+          <div class="card-desc">个人IP一键全智能打造</div>
+        </div>
+        <div class="card-arrow">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6H10M10 6L6 2M10 6L6 10" stroke="#7F8892" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <!-- [7] 个性化IP y=718.5 -->
+      <div class="func-card" style="top:718.5px;">
+        <div class="card-icon-wrap">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="14" r="9" fill="rgba(255,255,255,0.9)"/>
+            <path d="M6 36C6 27 12 22 20 22C28 22 34 27 34 36" fill="rgba(255,255,255,0.9)"/>
+            <path d="M29 9L36 5M29 9L36 13" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-text-area">
+          <div class="card-title-main">个性化IP</div>
+          <div class="card-desc">自动生成个性化IP视频</div>
+        </div>
+        <div class="card-arrow">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6H10M10 6L6 2M10 6L6 10" stroke="#7F8892" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+    </div><!-- /cards-area -->
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <div class="tab-item">
+        <div class="tab-icon-wrap"><div class="tab-icon-bg"></div>
+          <svg style="position:absolute;top:3px;left:4.5px" width="11" height="14" viewBox="0 0 11 14"><path d="M5.5 1L0.5 6V13H4V9H7V13H10.5V6L5.5 1Z" fill="#7F8892"/></svg>
+        </div>
+        <div class="tab-label">首页</div>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon-wrap"><div class="tab-indicator"></div><div class="tab-icon-bg"></div>
+          <svg style="position:absolute;top:2px;left:3px" width="14" height="16" viewBox="0 0 14 16" fill="none"><rect x="1" y="3" width="12" height="11" rx="2.5" stroke="#543EEA" stroke-width="1.2" fill="none"/><path d="M4.5 8H9.5M7 5.5V10.5" stroke="#543EEA" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="tab-label active">创作区</div>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon-wrap"><div class="tab-indicator"></div><div class="tab-icon-bg"></div>
+          <svg style="position:absolute;top:2px;left:3px" width="14" height="16" viewBox="0 0 14 16" fill="none"><rect x="1" y="4" width="12" height="10" rx="2" stroke="#543EEA" stroke-width="1.2" fill="none"/><path d="M1 7L4.5 10.5L7 7.5L9.5 10.5L13 6.5" stroke="#543EEA" stroke-width="1.2" fill="none"/></svg>
+        </div>
+        <div class="tab-label active">作品区</div>
+      </div>
+      <div class="tab-item">
+        <div class="tab-icon-wrap"><div class="tab-icon-bg"></div>
+          <svg style="position:absolute;top:3px;left:5px" width="10" height="14" viewBox="0 0 10 14"><circle cx="5" cy="3.5" r="2.5" fill="#7F8892"/><path d="M1 13C1 10.5 2.5 9 5 9C7.5 9 9 10.5 9 13" fill="#7F8892"/></svg>
+        </div>
+        <div class="tab-label">我的</div>
+      </div>
+    </div>
+
+    <!-- 安全指示条 y=893pt, w=134pt, h=5pt, br=2.5pt, #FFFFFF -->
+    <div class="safe-bar"></div>
+
+    <!-- 辅助线 -->
+    <div class="grid">
+      <div class="hl" style="top:100px;background:rgba(255,200,0,0.3);"></div>
+      <div class="hl" style="top:389px;background:rgba(255,100,0,0.5);"></div>
+      <div class="hl" style="top:823.5px;background:rgba(0,200,255,0.5);"></div>
+      <div class="hl" style="top:893pt;background:rgba(0,255,100,0.5);"></div>
+      <div class="vl" style="left:92pt;background:rgba(255,0,0,0.2);"></div>
+    </div>
+
+  </div><!-- /phone-frame -->
+  </div><!-- /preview-wrap -->
+
+  <!-- 右侧控件清单 -->
+  <div class="right-panel">
+    <div class="rp-title">控件清单 (106个控件)</div>
+
+    <div class="rp-section">
+      <div class="rp-section-label">Canvas</div>
+      <div class="layer-card">
+        <div class="lc-props">
+          <div class="prop"><span class="pl">尺寸: </span>375pt × 906pt</div>
+          <div class="prop"><span class="pl">倍率: </span>iOS @2x</div>
+          <div class="prop"><span class="pl">渐变区: </span>y:0–389pt</div>
+          <div class="prop"><span class="pl">安全条: </span>y:893pt</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rp-section">
+      <div class="rp-section-label">顶部渐变区 (y: 0–389pt)</div>
+      <div class="layer-card">
+        <div class="lc-name">矩形背景（3色渐变）</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">位置: </span>x:0pt  y:0pt</div>
+          <div class="prop"><span class="pl">大小: </span>375pt × 389pt</div>
+          <div class="prop"><span class="pl">类型: </span><span class="pv-grad">3色渐变</span></div>
+          <div class="prop"><span class="pl">颜色: </span><span class="pv-grad">#131E35→#1C2B47→#020120</span></div>
+        </div>
+      </div>
+      <div class="layer-card">
+        <div class="lc-name">椭圆形装饰</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">位置: </span>x:99.5pt  y:0pt</div>
+          <div class="prop"><span class="pl">大小: </span>178.5pt × 108pt</div>
+          <div class="prop"><span class="pl">颜色: </span><span class="pv-color">#228E80</span></div>
+          <div class="prop"><span class="pl">形状: </span>圆（border-radius:50%）</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rp-section">
+      <div class="rp-section-label">欢迎语 (y: 100pt)</div>
+      <div class="layer-card selected">
+        <div class="lc-name">「您好，我是小悦悦，让我们一起开始创作吧！」</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">位置: </span>x:12pt  y:100pt</div>
+          <div class="prop"><span class="pl">字号: </span>13pt</div>
+          <div class="prop"><span class="pl">字体: </span>苹方-简 常规体 Regular</div>
+          <div class="prop"><span class="pl">颜色: </span><span class="pv-color">#FFFFFF</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rp-section">
+      <div class="rp-section-label">功能卡片 × 7（间距98pt，圆角17pt）</div>
+      <div class="layer-card selected">
+        <div class="lc-name">[1] 形象克隆 y:130.5</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">位置: </span>x:8pt  y:130.5pt</div>
+          <div class="prop"><span class="pl">大小: </span>359pt × 90pt</div>
+          <div class="prop"><span class="pl">圆角: </span><span class="pv-br">17pt</span></div>
+          <div class="prop"><span class="pl">背景: </span><span class="pv-color">#191C2A</span></div>
+          <div class="prop"><span class="pl">图标: </span>84pt×84pt 渐变紫→青</div>
+          <div class="prop"><span class="pl">字号: </span>14pt 苹方-简</div>
+        </div>
+      </div>
+      <div class="layer-card">
+        <div class="lc-name">[2] 声音克隆 y:228.5</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">位置: </span>x:8pt  y:228.5pt</div>
+          <div class="prop"><span class="pl">圆角: </span><span class="pv-br">17pt</span></div>
+          <div class="prop"><span class="pl">主: </span>声音克隆 <span class="pv-color">#FFFFFF</span></div>
+          <div class="prop"><span class="pl">副: </span>数字人声音克隆 <span style="color:#888B97">#888B97</span></div>
+        </div>
+      </div>
+      <div class="layer-card">
+        <div class="lc-name">[3] 视频合成 y:326.5</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">圆角: </span><span class="pv-br">17pt</span></div>
+          <div class="prop"><span class="pl">主: </span>视频合成 <span class="pv-color">#FFFFFF</span></div>
+          <div class="prop"><span class="pl">副: </span>数字人视频合成 <span style="color:#888B97">#888B97</span></div>
+        </div>
+      </div>
+      <div class="layer-card">
+        <div class="lc-name">[4] 视频创作 y:424.5</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">圆角: </span><span class="pv-br">17pt</span></div>
+          <div class="prop"><span class="pl">主: </span>视频创作 <span class="pv-color">#FFFFFF</span></div>
+          <div class="prop"><span class="pl">副: </span>真人原声视频制作 <span style="color:#888B97">#888B97</span></div>
+        </div>
+      </div>
+      <div class="layer-card">
+        <div class="lc-name">[5] 视频创意师 y:522.5</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">圆角: </span><span class="pv-br">17pt</span></div>
+          <div class="prop"><span class="pl">主: </span>视频创意师 <span class="pv-color">#FFFFFF</span></div>
+          <div class="prop"><span class="pl">副: </span>智能化生成行业专属视频 <span style="color:#888B97">#888B97</span></div>
+        </div>
+      </div>
+      <div class="layer-card">
+        <div class="lc-name">[6] 图文设计师 y:620.5</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">圆角: </span><span class="pv-br">17pt</span></div>
+          <div class="prop"><span class="pl">主: </span>图文设计师 <span class="pv-color">#FFFFFF</span></div>
+          <div class="prop"><span class="pl">副: </span>个人IP一键全智能打造 <span style="color:#888B97">#888B97</span></div>
+        </div>
+      </div>
+      <div class="layer-card">
+        <div class="lc-name">[7] 个性化IP y:718.5</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">圆角: </span><span class="pv-br">17pt</span></div>
+          <div class="prop"><span class="pl">主: </span>个性化IP <span class="pv-color">#FFFFFF</span></div>
+          <div class="prop"><span class="pl">副: </span>自动生成个性化IP视频 <span style="color:#888B97">#888B97</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rp-section">
+      <div class="rp-section-label">Tab Bar (y: 823.5–906pt)</div>
+      <div class="layer-card">
+        <div class="lc-name">Tab Bar 背景</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">位置: </span>x:0pt  y:823.5pt</div>
+          <div class="prop"><span class="pl">大小: </span>375pt × 82.5pt</div>
+          <div class="prop"><span class="pl">颜色: </span><span class="pv-color">#202138</span></div>
+        </div>
+      </div>
+      <div class="layer-card selected">
+        <div class="lc-name">创作区 Tab（选中）</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">位置: </span>x:121.5pt  y:851.5pt</div>
+          <div class="prop"><span class="pl">字号: </span>11pt 苹方-简 常规体</div>
+          <div class="prop"><span class="pl">颜色: </span><span class="pv-color">#00CBE0</span></div>
+          <div class="prop"><span class="pl">图标: </span><span class="pv-grad">#543EEA 紫→青渐变路径</span></div>
+        </div>
+      </div>
+      <div class="layer-card selected">
+        <div class="lc-name">作品区 Tab（选中）</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">位置: </span>x:219pt  y:851.5pt</div>
+          <div class="prop"><span class="pl">字号: </span>11pt 苹方-简 常规体</div>
+          <div class="prop"><span class="pl">颜色: </span><span style="color:#7F8892">#7F8892</span></div>
+        </div>
+      </div>
+      <div class="layer-card">
+        <div class="lc-name">首页 Tab / 我的 Tab</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">首页: </span>x:35pt  y:851.5pt</div>
+          <div class="prop"><span class="pl">我的: </span>x:317pt  y:851.5pt</div>
+          <div class="prop"><span class="pl">颜色: </span><span style="color:#7F8892">#7F8892</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rp-section">
+      <div class="rp-section-label">底部安全指示条</div>
+      <div class="layer-card">
+        <div class="lc-name">安全指示条（Home Indicator）</div>
+        <div class="lc-props">
+          <div class="prop"><span class="pl">位置: </span>x:120.5pt  y:893pt</div>
+          <div class="prop"><span class="pl">大小: </span>134pt × 5pt</div>
+          <div class="prop"><span class="pl">圆角: </span><span class="pv-br">2.5pt</span></div>
+          <div class="prop"><span class="pl">颜色: </span><span class="pv-color">#FFFFFF</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rp-section">
+      <div class="rp-section-label">统计</div>
+      <div class="layer-card">
+        <div class="lc-props">
+          <div class="prop"><span class="pl">总控件: </span>106个</div>
+          <div class="prop"><span class="pl">有效标注: </span>76个</div>
+          <div class="prop"><span class="pl">有颜色: </span>60个</div>
+          <div class="prop"><span class="pl">有字体: </span>19个</div>
+          <div class="prop"><span class="pl">有渐变: </span>5个</div>
+          <div class="prop"><span class="pl">有圆角: </span>8个</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /right-panel -->
+
+</div><!-- /main-layout -->
+
+</body>
+</html>

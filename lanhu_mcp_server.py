@@ -131,6 +131,267 @@ ROLE_MAPPING_RULES = [
 ]
 
 
+# ==================== iOS UI 设计图适配 ====================
+
+# iOS 设备尺寸常量
+IOS_DEVICES = {
+    # iPhone 尺寸 (逻辑像素 @1x)
+    'iPhone SE': {'width': 320, 'height': 568},
+    'iPhone 8': {'width': 375, 'height': 667},
+    'iPhone 14': {'width': 390, 'height': 844},
+    'iPhone 14 Pro Max': {'width': 430, 'height': 932},
+    'iPhone 15': {'width': 393, 'height': 852},
+    'iPhone 15 Pro Max': {'width': 430, 'height': 932},
+    'iPhone 16 Pro': {'width': 393, 'height': 852},
+    'iPhone 16 Pro Max': {'width': 448, 'height': 990},
+    # iPad 尺寸
+    'iPad Mini': {'width': 768, 'height': 1024},
+    'iPad Air': {'width': 820, 'height': 1180},
+    'iPad Pro 11': {'width': 834, 'height': 1194},
+    'iPad Pro 12.9': {'width': 1024, 'height': 1366},
+}
+
+# 常见 iOS 设计稿倍率
+IOS_SCALES = {
+    '@1x': 1.0,
+    '@2x': 2.0,
+    '@3x': 3.0,
+}
+
+
+def detect_device_type(width: int, height: int, device_str: str = "") -> dict:
+    """
+    检测设计图对应的设备类型和倍率
+
+    Args:
+        width: 设计稿宽度 (px)
+        height: 设计稿高度 (px)
+        device_str: 设备描述字符串，如 "iPhone 12 Pro Max@3x"
+
+    Returns:
+        包含 device_type, scale, recommended_unit 等信息的字典
+    """
+    result = {
+        'device_type': 'unknown',
+        'scale': 2.0,  # 默认倍率
+        'scale_label': '@2x',
+        'recommended_unit': 'px',
+        'platform': 'unknown',
+        'confidence': 0.0,
+        'matched_device': None,
+    }
+
+    # 1. 首先从 device_str 解析倍率
+    if '@3x' in device_str:
+        result['scale'] = 3.0
+        result['scale_label'] = '@3x'
+    elif '@2x' in device_str:
+        result['scale'] = 2.0
+        result['scale_label'] = '@2x'
+    elif '@1x' in device_str:
+        result['scale'] = 1.0
+        result['scale_label'] = '@1x'
+
+    # 2. 从 device_str 解析设备类型（优先级：Android > iOS > Web）
+    device_lower = device_str.lower()
+
+    # Android 检测（优先，因为 @2x/@3x 在蓝湖中也用于 Android）
+    if 'android' in device_lower or '安卓' in device_str:
+        result['device_type'] = 'Android'
+        result['platform'] = 'Android'
+        result['recommended_unit'] = 'dp'  # Android 使用 dp
+        result['confidence'] = 0.9
+
+    # iOS 检测
+    elif 'iphone' in device_lower or 'ios' in device_lower or 'ipad' in device_lower:
+        result['device_type'] = 'iOS'
+        result['platform'] = 'iOS'
+        result['recommended_unit'] = 'pt'  # iOS 使用 pt
+        result['confidence'] = 0.9
+
+    # Web 检测
+    elif 'web' in device_lower or '网页' in device_str or 'desktop' in device_lower:
+        result['device_type'] = 'Web'
+        result['platform'] = 'Web'
+        result['recommended_unit'] = 'px'
+        result['confidence'] = 0.8
+
+    # 3. 如果 device_str 没有明确类型，根据尺寸推断
+    if result['device_type'] == 'unknown':
+        result = infer_device_from_size(width, height)
+
+    return result
+
+
+def infer_device_from_size(width: int, height: int) -> dict:
+    """
+    根据设计稿尺寸推断设备类型
+
+    Args:
+        width: 设计稿宽度 (px)
+        height: 设计稿高度 (px)
+
+    Returns:
+        推断结果字典
+    """
+    result = {
+        'device_type': 'unknown',
+        'scale': 2.0,
+        'scale_label': '@2x',
+        'recommended_unit': 'px',
+        'platform': 'unknown',
+        'confidence': 0.5,
+        'matched_device': None,
+    }
+
+    # 匹配已知设备
+    for device_name, dims in IOS_DEVICES.items():
+        if dims['width'] == width and dims['height'] == height:
+            result['device_type'] = 'iOS'
+            result['platform'] = 'iOS'
+            result['recommended_unit'] = 'pt'
+            result['confidence'] = 0.8
+            result['matched_device'] = device_name
+            return result
+
+        # 检查是否为 iPhone 基础尺寸的整数倍
+        if width == dims['width'] * 2 or width == dims['width'] * 3:
+            if height == dims['height'] * 2 or height == dims['height'] * 3:
+                result['device_type'] = 'iOS'
+                result['platform'] = 'iOS'
+                result['recommended_unit'] = 'pt'
+                result['confidence'] = 0.7
+                result['matched_device'] = f"{device_name} (@{int(width/dims['width'])}x 导出)"
+                result['scale'] = width / dims['width']
+                result['scale_label'] = f'@{int(result["scale"])}x'
+                return result
+
+    # Android 常见尺寸检测 (360dp/480dp 为基准)
+    if width in [360, 720, 1080] or height in [640, 960, 1440]:
+        result['device_type'] = 'Android'
+        result['platform'] = 'Android'
+        result['recommended_unit'] = 'dp'
+        result['confidence'] = 0.6
+
+    # Web 常见尺寸检测
+    elif width >= 1024 or (width >= 375 and width <= 1920 and height >= 667 and height <= 1080):
+        result['device_type'] = 'Web'
+        result['platform'] = 'Web'
+        result['recommended_unit'] = 'px'
+        result['confidence'] = 0.6
+
+    return result
+
+
+def get_ios_asset_recommendations(width: int, height: int, scale: float = 2.0) -> dict:
+    """
+    获取 iOS 资源文件推荐尺寸
+
+    Args:
+        width: 设计稿宽度 (px)
+        height: 设计稿高度 (px)
+        scale: 倍率 (2.0 或 3.0)
+
+    Returns:
+        iOS 资源尺寸推荐
+    """
+    # 计算逻辑尺寸 (pt)
+    logical_w = width / scale
+    logical_h = height / scale
+
+    return {
+        'app_icon': {
+            'description': '应用图标',
+            'sizes': [
+                {'name': '20x20', 'scale': '@1x'},
+                {'name': '40x40', 'scale': '@2x'},
+                {'name': '60x60', 'scale': '@3x'},
+            ]
+        },
+        'launch_image': {
+            'description': '启动图',
+            'portrait': {
+                'width': int(width),
+                'height': int(height),
+            },
+            'scales': ['@2x', '@3x'] if scale == 3.0 else ['@2x']
+        },
+        'design_size': {
+            'description': '设计稿尺寸',
+            'logical': {
+                'width': int(logical_w),
+                'height': int(logical_h),
+                'unit': 'pt'
+            },
+            'actual': {
+                'width': int(width),
+                'height': int(height),
+                'scale': scale,
+                'unit': 'px'
+            }
+        }
+    }
+
+
+def build_ios_scale_urls(base_url: str, width: int, height: int, scale: float = 2.0) -> dict:
+    """
+    构建 iOS 多倍图 URL
+
+    Args:
+        base_url: 原始图片 URL
+        width: 设计稿宽度 (px)
+        height: 设计稿高度 (px)
+        scale: 倍率
+
+    Returns:
+        包含各倍率 URL 的字典
+    """
+    import urllib.parse
+
+    # 计算逻辑尺寸
+    logical_w = int(width / scale)
+    logical_h = int(height / scale)
+
+    def make_url(w, h):
+        parsed = urllib.parse.urlparse(base_url)
+        # 移除现有参数
+        params = {}
+        # OSS image style 参数
+        if 'x-oss-process' in parsed.query:
+            return base_url  # 已有处理参数，保持原样
+        return f"{base_url}?x-oss-process=image/resize,w_{w},h_{h}"
+
+    return {
+        '@1x': {
+            'width': logical_w,
+            'height': logical_h,
+            'url': make_url(logical_w, logical_h),
+            'description': '1x 图 (低分辨率设备)',
+            'unit': 'pt'
+        },
+        '@2x': {
+            'width': logical_w * 2,
+            'height': logical_h * 2,
+            'url': make_url(logical_w * 2, logical_h * 2),
+            'description': '2x 图 (iPhone 8/SE 等)',
+            'unit': 'px'
+        },
+        '@3x': {
+            'width': logical_w * 3,
+            'height': logical_h * 3,
+            'url': make_url(logical_w * 3, logical_h * 3),
+            'description': '3x 图 (iPhone 12/13/14 Pro 等)',
+            'unit': 'px'
+        },
+        'logic_pt': {
+            'width': logical_w,
+            'height': logical_h,
+            'description': '逻辑尺寸 (iOS 开发使用)',
+            'unit': 'pt'
+        }
+    }
+
+
 # ==================== 设计图JSON转HTML转换器 ====================
 
 _UNITLESS_PROPERTIES = {'zIndex', 'fontWeight', 'opacity', 'flex', 'flexGrow', 'flexShrink', 'order'}
@@ -210,14 +471,23 @@ def _camel_to_kebab(s: str) -> str:
     return re.sub(r'([A-Z])', lambda m: f'-{m.group(1).lower()}', s)
 
 
-def _format_css_value(key: str, value) -> str:
-    """格式化CSS值，自动添加px单位"""
+def _format_css_value(key: str, value, scale: float = 1.0, unit: str = 'px') -> str:
+    """格式化CSS值，支持缩放和单位转换
+
+    Args:
+        key: CSS属性名
+        value: 属性值
+        scale: 缩放比例（iOS @2x = 2.0, @3x = 3.0）
+        unit: 输出单位 ('px' 或 'pt')
+    """
     if value is None:
         return ''
     if isinstance(value, (int, float)):
         if value == 0:
             return '0'
-        return str(value) if key in _UNITLESS_PROPERTIES else f'{value}px'
+        # 应用缩放
+        scaled_value = round(float(value) / scale * 10) / 10 if scale != 1.0 else value
+        return str(scaled_value) if key in _UNITLESS_PROPERTIES else f'{scaled_value}{unit}'
     if isinstance(value, str):
         # 处理rgba格式
         if 'rgba(' in value:
@@ -228,11 +498,14 @@ def _format_css_value(key: str, value) -> str:
             return re.sub(r'rgba\(([\d.]+),\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)\)', replace_rgba, value)
         # 检查字符串形式的数字（fontSize可能是"14"或"14px"）
         if re.match(r'^\d+$', value) and key not in _UNITLESS_PROPERTIES:
-            return '0' if value == '0' else f'{value}px'
+            if value == '0':
+                return '0'
+            scaled_value = round(float(value) / scale * 10) / 10 if scale != 1.0 else float(value)
+            return f'{scaled_value}{unit}'
     return str(value)
 
 
-def _merge_padding(styles: dict) -> None:
+def _merge_padding(styles: dict, scale: float = 1.0, unit: str = 'px') -> None:
     """合并padding四边属性"""
     pt = styles.get('paddingTop')
     pr = styles.get('paddingRight')
@@ -240,24 +513,25 @@ def _merge_padding(styles: dict) -> None:
     pl = styles.get('paddingLeft')
     
     if pt is not None and pr is not None and pb is not None and pl is not None:
-        pt_val = pt or 0
-        pr_val = pr or 0
-        pb_val = pb or 0
-        pl_val = pl or 0
+        # 应用缩放
+        pt_val = round((pt or 0) / scale * 10) / 10 if scale != 1.0 else (pt or 0)
+        pr_val = round((pr or 0) / scale * 10) / 10 if scale != 1.0 else (pr or 0)
+        pb_val = round((pb or 0) / scale * 10) / 10 if scale != 1.0 else (pb or 0)
+        pl_val = round((pl or 0) / scale * 10) / 10 if scale != 1.0 else (pl or 0)
         
         if pt_val == pb_val and pl_val == pr_val:
             if pt_val == pl_val:
-                styles['padding'] = f'{pt_val}px'
+                styles['padding'] = f'{pt_val}{unit}'
             else:
-                styles['padding'] = f'{pt_val}px {pr_val}px'
+                styles['padding'] = f'{pt_val}{unit} {pr_val}{unit}'
         else:
-            styles['padding'] = f'{pt_val}px {pr_val}px {pb_val}px {pl_val}px'
+            styles['padding'] = f'{pt_val}{unit} {pr_val}{unit} {pb_val}{unit} {pl_val}{unit}'
         
         for k in ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft']:
             styles.pop(k, None)
 
 
-def _merge_margin(styles: dict) -> None:
+def _merge_margin(styles: dict, scale: float = 1.0, unit: str = 'px') -> None:
     """合并margin四边属性"""
     mt = styles.get('marginTop')
     mr = styles.get('marginRight')
@@ -265,20 +539,21 @@ def _merge_margin(styles: dict) -> None:
     ml = styles.get('marginLeft')
     
     if mt is not None or mr is not None or mb is not None or ml is not None:
-        mt_val = mt or 0
-        mr_val = mr or 0
-        mb_val = mb or 0
-        ml_val = ml or 0
+        # 应用缩放
+        mt_val = round((mt or 0) / scale * 10) / 10 if scale != 1.0 else (mt or 0)
+        mr_val = round((mr or 0) / scale * 10) / 10 if scale != 1.0 else (mr or 0)
+        mb_val = round((mb or 0) / scale * 10) / 10 if scale != 1.0 else (mb or 0)
+        ml_val = round((ml or 0) / scale * 10) / 10 if scale != 1.0 else (ml or 0)
         
         if mt_val == 0 and mr_val == 0 and mb_val == 0 and ml_val == 0:
             pass  # 全是0，不输出
         elif mt_val == mb_val and ml_val == mr_val:
             if mt_val == ml_val:
-                styles['margin'] = f'{mt_val}px'
+                styles['margin'] = f'{mt_val}{unit}'
             else:
-                styles['margin'] = f'{mt_val}px {mr_val}px'
+                styles['margin'] = f'{mt_val}{unit} {mr_val}{unit}'
         else:
-            styles['margin'] = f'{mt_val}px {mr_val}px {mb_val}px {ml_val}px'
+            styles['margin'] = f'{mt_val}{unit} {mr_val}{unit} {mb_val}{unit} {ml_val}{unit}'
         
         for k in ['marginTop', 'marginRight', 'marginBottom', 'marginLeft']:
             styles.pop(k, None)
@@ -341,7 +616,7 @@ def _get_flex_classes(node: dict) -> list:
     return classes
 
 
-def _clean_styles(node: dict, flex_classes: list) -> dict:
+def _clean_styles(node: dict, flex_classes: list, scale: float = 1.0, unit: str = 'px') -> dict:
     """清理样式，移除被flex类覆盖的标准值"""
     node_props = node.get('props', {})
     props_style = node_props.get('style', {})
@@ -377,11 +652,11 @@ def _clean_styles(node: dict, flex_classes: list) -> dict:
         
         styles[key] = value
     
-    # 合并padding和margin
+    # 合并padding和margin（传递scale和unit参数）
     if any(k in styles for k in ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft']):
-        _merge_padding(styles)
+        _merge_padding(styles, scale, unit)
     if any(k in styles for k in ['marginTop', 'marginRight', 'marginBottom', 'marginLeft']):
-        _merge_margin(styles)
+        _merge_margin(styles, scale, unit)
     
     return styles
 
@@ -394,8 +669,16 @@ def _get_loop_arr(node: dict) -> list:
     return arr if isinstance(arr, list) else []
 
 
-def _generate_css(node: dict, css_rules: dict, loop_suffixes: list | None = None) -> None:
-    """递归生成CSS规则。loop_suffixes 非空时，当前子树为循环模板，类名按 -0/-1/... 展开。"""
+def _generate_css(node: dict, css_rules: dict, loop_suffixes: list | None = None, scale: float = 1.0, unit: str = 'px') -> None:
+    """递归生成CSS规则。loop_suffixes 非空时，当前子树为循环模板，类名按 -0/-1/... 展开。
+
+    Args:
+        node: 节点数据
+        css_rules: CSS规则字典
+        loop_suffixes: 循环后缀列表
+        scale: 缩放比例（iOS @2x = 2.0, @3x = 3.0）
+        unit: 输出单位 ('px' 或 'pt')
+    """
     if not node:
         return
 
@@ -407,13 +690,13 @@ def _generate_css(node: dict, css_rules: dict, loop_suffixes: list | None = None
     class_name = node_props.get('className')
     if class_name:
         flex_classes = _get_flex_classes(node)
-        styles = _clean_styles(node, flex_classes)
+        styles = _clean_styles(node, flex_classes, scale, unit)
         style_entries = list(styles.items())
         if style_entries or node.get('type') == 'lanhutext':
             css_props = []
             for key, value in style_entries:
                 css_key = _camel_to_kebab(key)
-                css_value = _format_css_value(key, value)
+                css_value = _format_css_value(key, value, scale, unit)
                 if css_value:
                     css_props.append(f'  {css_key}: {css_value};')
             content = '\n'.join(css_props) if css_props else ''
@@ -427,7 +710,7 @@ def _generate_css(node: dict, css_rules: dict, loop_suffixes: list | None = None
 
     children = node.get('children', [])
     for child in children:
-        _generate_css(child, css_rules, loop_suffixes)
+        _generate_css(child, css_rules, loop_suffixes, scale, unit)
 
 
 def _resolve_loop_placeholder(value: str, loop_item: dict) -> str:
@@ -505,20 +788,22 @@ def _generate_html(
     return f'{spaces}<{tag} class="{all_classes}"></{tag}>'
 
 
-def convert_lanhu_to_html(json_data: dict) -> str:
+def convert_lanhu_to_html(json_data: dict, design_scale: float = 1.0, unit: str = 'px') -> str:
     """
     将蓝湖设计图JSON转换为HTML+CSS
     
     Args:
         json_data: 蓝湖设计图Schema JSON
+        design_scale: 缩放比例（iOS @2x = 2.0, @3x = 3.0, 默认1.0不缩放）
+        unit: 输出单位 ('px' 或 'pt')，默认'px'
         
     Returns:
         完整的HTML字符串（含嵌入式CSS）
     """
     css_rules = {}
     
-    # 生成CSS
-    _generate_css(json_data, css_rules)
+    # 生成CSS（传递scale和unit参数）
+    _generate_css(json_data, css_rules, scale=design_scale, unit=unit)
     
     # 组装CSS字符串
     css_parts = []
@@ -788,10 +1073,16 @@ def _oc_to_css(oc_code: str) -> str:
 
 
 def convert_sketch_to_html(sketch_data: dict, design_scale: float = 2.0,
-                           design_img_url: str = "") -> str:
+                           design_img_url: str = "") -> tuple:
     """
     将 Sketch/PSD JSON 转换为 HTML+CSS。
     策略：设计原图 background-image 裁剪 + 文字/切图叠加 + data-css 标注。
+
+    支持 Lanhu Sketch JSON 格式（蓝湖导出的 Sketch JSON）：
+    - text layer: type='text', font={size,line,align,styles[]}, name=文字内容
+    - shape layer: type='shape', fills=[{color}], radius=[N]（圆角为列表）
+    - bitmap layer: type='bitmap', ddsImage.imageUrl=图片URL
+    - opacity: 顶层 opacity 字段（不在 blendOptions 中）
     """
     import math, re
     scale = design_scale or 2.0
@@ -813,6 +1104,10 @@ def convert_sketch_to_html(sketch_data: dict, design_scale: float = 2.0,
         return f"rgba({r},{g},{b},{a})" if a < 1 else f"rgb({r},{g},{b})"
 
     def get_opacity(layer):
+        # Lanhu: opacity 在顶层；标准: 在 blendOptions 中
+        top_opacity = layer.get('opacity')
+        if isinstance(top_opacity, (int, float)):
+            return top_opacity
         bo = layer.get('blendOptions') or {}
         if 'opacity' in bo:
             op = bo['opacity']
@@ -820,6 +1115,16 @@ def convert_sketch_to_html(sketch_data: dict, design_scale: float = 2.0,
         return 100
 
     def extract_border_radius(layer):
+        # Lanhu 格式: layer.radius = [N]（列表）
+        radii_list = layer.get('radius')
+        if radii_list and isinstance(radii_list, list):
+            r = [px(v) for v in radii_list]
+            if len(r) == 1:
+                return f"{r[0]}px" if r[0] > 0 else None
+            if any(v > 0 for v in r):
+                return ' '.join(f"{rv}px" for rv in r)
+            return None
+        # 标准 Sketch JSON: path.pathComponents[0].origin.radii
         path = layer.get('path') or {}
         comps = path.get('pathComponents') or []
         if not comps:
@@ -852,7 +1157,6 @@ def convert_sketch_to_html(sketch_data: dict, design_scale: float = 2.0,
                 g = round(c.get('green', c.get('g', 0)))
                 b = round(c.get('blue', c.get('b', 0)))
                 color = f"rgba({r},{g},{b},{round(op_val/100, 2)})"
-
             angle_obj = fx.get('localLightingAngle') or {}
             angle_deg = angle_obj.get('value', 90) if isinstance(angle_obj, dict) else 90
             angle_rad = math.radians(angle_deg)
@@ -861,7 +1165,6 @@ def convert_sketch_to_html(sketch_data: dict, design_scale: float = 2.0,
             spread = px(fx.get('chokeMatte', 0))
             ox = round(-dist * math.cos(angle_rad) * 10) / 10
             oy = round(dist * math.sin(angle_rad) * 10) / 10
-
             inset = "inset " if key == 'innerShadow' else ""
             spread_str = f" {spread}px" if spread else ""
             shadows.append(f"{inset}{ox}px {oy}px {blur}px{spread_str} {color}")
@@ -884,6 +1187,16 @@ def convert_sketch_to_html(sketch_data: dict, design_scale: float = 2.0,
         m = re.search(r'(\d+)', style_name)
         return int(m.group(1)) if m else None
 
+    def extract_fill_color(layer):
+        # Lanhu: fills=[{type:'color', color:{value:'rgba(...)'}}]
+        fills = layer.get('fills') or []
+        for f in fills:
+            if not f.get('isEnabled', True):
+                continue
+            if f.get('type') == 'color':
+                return color_css(f.get('color'))
+        return None
+
     layers = []
     board_w = 375
     board_h = 667
@@ -893,31 +1206,46 @@ def convert_sketch_to_html(sketch_data: dict, design_scale: float = 2.0,
         board_w = px(board.get('width', 750))
         board_h = px(board.get('height', 1334))
         raw_layers = board.get('layers', [])
+    elif 'info' in sketch_data:
+        # Lanhu Sketch JSON 格式: 顶层 info[] 数组
+        info = sketch_data['info']
+        if info:
+            first = info[0]
+            bw = first.get('width') or first.get('ddsOriginFrame', {}).get('width', 750)
+            bh = first.get('height') or first.get('ddsOriginFrame', {}).get('height', 1334)
+            board_w = px(bw)
+            board_h = px(bh)
+            raw_layers = info[1:] if len(info) > 1 else []
+        else:
+            raw_layers = []
+    else:
+        raw_layers = []
 
-        def _flatten(layer):
-            if not layer or not isinstance(layer, dict):
-                return
-            if layer.get('visible') is False:
-                return
-            w = layer.get('width', 0) or 0
-            h = layer.get('height', 0) or 0
-            if w == 0 and h == 0:
-                for child in reversed(layer.get('layers', [])):
+    def _flatten(layer):
+        if not layer or not isinstance(layer, dict):
+            return
+        if layer.get('isVisible') is False or layer.get('visible') is False:
+            return
+        w = layer.get('width', 0) or 0
+        h = layer.get('height', 0) or 0
+        if w == 0 and h == 0:
+            for child in reversed(layer.get('layers', []) or []):
+                _flatten(child)
+            return
+        ltype = layer.get('type', '')
+        if ltype in ('layerSection', 'layer-group', 'layerGroup'):
+            images = layer.get('images') or {}
+            dds = layer.get('ddsImage') or {}
+            if dds.get('imageUrl') or images.get('png_xxxhd') or images.get('svg'):
+                layers.append(layer)
+            else:
+                for child in reversed(layer.get('layers', []) or []):
                     _flatten(child)
-                return
-            ltype = layer.get('type', '')
-            if ltype == 'layerSection':
-                images = layer.get('images') or {}
-                if images.get('png_xxxhd') or images.get('svg'):
-                    layers.append(layer)
-                else:
-                    for child in reversed(layer.get('layers', [])):
-                        _flatten(child)
-                return
-            layers.append(layer)
+            return
+        layers.append(layer)
 
-        for l in reversed(raw_layers):
-            _flatten(l)
+    for l in reversed(raw_layers):
+        _flatten(l)
 
     css_rules = []
     html_parts = []
@@ -939,6 +1267,8 @@ def convert_sketch_to_html(sketch_data: dict, design_scale: float = 2.0,
         annot = {
             'name': name,
             'type': ltype,
+            'x_pt': left, 'y_pt': top,
+            'width_pt': w, 'height_pt': h,
             'css': {
                 'position': 'absolute',
                 'left': f'{left}px', 'top': f'{top}px',
@@ -962,29 +1292,99 @@ def convert_sketch_to_html(sketch_data: dict, design_scale: float = 2.0,
             props.append(f"border-radius:{br}")
             props.append("overflow:hidden")
             annot['css']['border-radius'] = br
+            annot['radius_pt'] = br
 
         shadow = extract_shadow(effects)
         if shadow:
             annot['css']['box-shadow'] = shadow
+            annot['shadow'] = shadow
 
         border = extract_border(effects)
         if border:
             annot['css']['border'] = border
 
         text_content = ""
-        is_slice = False
-        slice_url = ""
+        is_image = False
+        image_url = ""
+        all_image_urls = {}
 
-        images = L.get('images') or {}
-        if images.get('png_xxxhd') or images.get('svg'):
-            is_slice = True
-            slice_url = images.get('png_xxxhd') or images.get('svg')
+        # Lanhu bitmap layer: ddsImage.imageUrl
+        dds = L.get('ddsImage') or {}
+        if dds.get('imageUrl'):
+            is_image = True
+            image_url = dds['imageUrl']
+            all_image_urls['original'] = image_url
             local_name = f"{name.replace('/', '_').replace(' ', '_')}.png"
             local_path = f"./assets/slices/{local_name}"
-            image_url_mapping[local_path] = slice_url
-            annot['slice_url'] = slice_url
+            image_url_mapping[local_path] = image_url
+            annot['slice_url'] = image_url
+            annot['all_slice_urls'] = all_image_urls
 
-        if ltype == 'textLayer' and L.get('textInfo'):
+        # 标准 images 格式
+        images = L.get('images') or {}
+        if images.get('png_xxxhd') or images.get('svg'):
+            if not is_image:
+                is_image = True
+                slice_url = images.get('png_xxxhd') or images.get('svg')
+                image_url = slice_url
+                all_image_urls['png_xxxhd'] = slice_url
+                local_name = f"{name.replace('/', '_').replace(' ', '_')}.png"
+                local_path = f"./assets/slices/{local_name}"
+                image_url_mapping[local_path] = slice_url
+                annot['slice_url'] = slice_url
+                annot['all_slice_urls'] = all_image_urls
+
+        is_text = False
+        # === Lanhu text layer: type='text', font={size,line,align,styles[]}, name=内容 ===
+        if ltype == 'text' and L.get('font'):
+            is_text = True
+            font_obj = L['font']
+            text_content = name  # Lanhu: name 就是文字内容
+            annot['text'] = text_content
+            annot['font_size_pt'] = px(font_obj.get('size', 0))
+            annot['line_height_pt'] = px(font_obj.get('line', 0))
+
+            styles = font_obj.get('styles') or []
+            if styles:
+                tc = styles[0].get('color')
+                text_color = color_css(tc) if tc else None
+                if text_color:
+                    props.append(f"color:{text_color}")
+                    annot['css']['color'] = text_color
+                    annot['text_color'] = text_color
+
+            font_name = font_obj.get('fontName') or font_obj.get('fontPostScriptName') or ''
+            if font_name:
+                props.append(
+                    f'font-family:"{font_name}","PingFang SC",'
+                    f'"Microsoft YaHei","Hiragino Sans GB",sans-serif'
+                )
+                annot['css']['font-family'] = font_name
+                annot['font_name'] = font_name
+
+            align = font_obj.get('align', 'left')
+            if align != 'left':
+                props.append(f"text-align:{align}")
+                annot['css']['text-align'] = align
+
+            char_spacing = font_obj.get('characterSpacing') or 0
+            if char_spacing:
+                props.append(f"letter-spacing:{char_spacing}px")
+                annot['css']['letter-spacing'] = f"{char_spacing}px"
+                annot['letter_spacing'] = char_spacing
+
+            line_h = px(font_obj.get('line', 0))
+            if line_h > 0:
+                props.append(f"line-height:{line_h}px")
+
+            props.append('z-index:10')
+            props.append("white-space:pre-wrap")
+            if h > 0 and font_obj.get('size'):
+                props.append("overflow:hidden")
+            props.append("word-break:break-all")
+
+        # === 标准 textLayer 格式 ===
+        elif ltype == 'textLayer' and L.get('textInfo'):
             ti = L['textInfo']
             text_content = ti.get('text', '')
             annot['text'] = text_content
@@ -997,6 +1397,7 @@ def convert_sketch_to_html(sketch_data: dict, design_scale: float = 2.0,
             if font_size:
                 props.append(f"font-size:{font_size}px")
                 annot['css']['font-size'] = f'{font_size}px'
+                annot['font_size_pt'] = font_size
             font_name = ti.get('fontPostScriptName') or ti.get('fontName', '')
             if font_name:
                 props.append(
@@ -1004,6 +1405,7 @@ def convert_sketch_to_html(sketch_data: dict, design_scale: float = 2.0,
                     f'"Microsoft YaHei","Hiragino Sans GB",sans-serif'
                 )
                 annot['css']['font-family'] = font_name
+                annot['font_name'] = font_name
             font_style_name = ti.get('fontStyleName', '')
             fw = parse_font_weight(font_style_name)
             if fw:
@@ -1029,13 +1431,15 @@ def convert_sketch_to_html(sketch_data: dict, design_scale: float = 2.0,
             props.append("white-space:pre-wrap")
             props.append("overflow:hidden")
             props.append("word-break:break-all")
-        elif is_slice:
+
+        elif is_image:
             props.append('z-index:5')
         else:
-            fill = (L.get('fill') or {})
-            fill_color = color_css(fill.get('color'), opacity)
+            # 纯色填充（Lanhu fills[]）
+            fill_color = extract_fill_color(L)
             if fill_color:
                 annot['css']['background-color'] = fill_color
+                annot['background_color'] = fill_color
 
         css_rules.append(f".{cls}{{{';'.join(props)}}}")
 
@@ -1048,10 +1452,10 @@ def convert_sketch_to_html(sketch_data: dict, design_scale: float = 2.0,
                 f'<div class="{cls}" title="{safe_name}" data-css="{safe_css}">'
                 f'{safe_text}</div>'
             )
-        elif is_slice:
+        elif is_image:
             html_parts.append(
                 f'<img class="{cls}" title="{safe_name}" data-css="{safe_css}" '
-                f'src="{slice_url}" referrerpolicy="no-referrer" />'
+                f'src="{image_url}" referrerpolicy="no-referrer" />'
             )
         else:
             html_parts.append(
@@ -1079,6 +1483,8 @@ def convert_sketch_to_html(sketch_data: dict, design_scale: float = 2.0,
     )
 
     return html, image_url_mapping, layer_annotations
+
+
 
 
 # JS 脚本：注入蓝湖页面，遍历所有图层，点击提取标注面板数据
@@ -3129,18 +3535,52 @@ class LanhuExtractor:
             for item in sketch_data['info']:
                 find_slices(item)
 
-        return {
+        # iOS 适配：获取设备信息
+        width = result.get('width', 0)
+        height = result.get('height', 0)
+        device_str = sketch_data.get('device', '')
+        device_info = detect_device_type(width, height, device_str)
+
+        # 构建返回结果
+        return_result = {
             'design_id': image_id,
             'design_name': result['name'],
             'version': latest_version['version_info'],
             'slice_scale': slice_scale,
             'canvas_size': {
-                'width': result.get('width'),
-                'height': result.get('height')
+                'width': width,
+                'height': height
             },
             'total_slices': len(slices),
-            'slices': slices
+            'slices': slices,
+            # iOS 适配新增字段
+            'ios_adaptation': {
+                'platform': device_info['platform'],
+                'device_type': device_info['device_type'],
+                'device_string': device_str,
+                'scale': device_info['scale'],
+                'scale_label': device_info['scale_label'],
+                'recommended_unit': device_info['recommended_unit'],
+                'confidence': device_info['confidence'],
+                'matched_device': device_info['matched_device'],
+            }
         }
+
+        # 如果是 iOS 设备，添加更多详细信息
+        if device_info['platform'] == 'iOS':
+            # 获取 iOS 资源推荐
+            return_result['ios_adaptation']['asset_recommendations'] = get_ios_asset_recommendations(
+                width, height, device_info['scale']
+            )
+
+            # 构建 iOS 多倍图 URL
+            design_url = result.get('url', '')
+            if design_url:
+                return_result['ios_adaptation']['ios_scale_urls'] = build_ios_scale_urls(
+                    design_url, width, height, device_info['scale']
+                )
+
+        return return_result
 
     async def _get_version_id_by_image_id(self, project_id: str, team_id: str, image_id: str) -> str:
         """通过 multi_info 按 image_id 获取 version_id（与 lanhu-html-converter-mcp 一致）"""
@@ -4735,21 +5175,51 @@ async def _get_designs_internal(extractor: LanhuExtractor, url: str) -> dict:
 
     design_list = []
     for idx, img in enumerate(images, 1):
-        design_list.append({
+        width = img.get('width', 0)
+        height = img.get('height', 0)
+        name = img.get('name', '')
+
+        # 检测设备类型和倍率
+        device_info = detect_device_type(width, height, name)
+
+        design_item = {
             'index': idx,
             'id': img.get('id'),
-            'name': img.get('name'),
-            'width': img.get('width'),
-            'height': img.get('height'),
+            'name': name,
+            'width': width,
+            'height': height,
             'url': img.get('url'),
             'has_comment': img.get('has_comment', False),
-            'update_time': img.get('update_time')
-        })
+            'update_time': img.get('update_time'),
+            # iOS 适配新增字段
+            'platform': device_info['platform'],
+            'device_type': device_info['device_type'],
+            'scale': device_info['scale'],
+            'scale_label': device_info['scale_label'],
+            'recommended_unit': device_info['recommended_unit'],
+            'confidence': device_info['confidence'],
+            'matched_device': device_info['matched_device'],
+        }
+
+        # 如果是 iOS 设备，添加资源推荐
+        if device_info['platform'] == 'iOS':
+            design_item['ios_recommendations'] = get_ios_asset_recommendations(
+                width, height, device_info['scale']
+            )
+
+        design_list.append(design_item)
+
+    # 统计各平台数量
+    platform_stats = {}
+    for design in design_list:
+        platform = design.get('platform', 'unknown')
+        platform_stats[platform] = platform_stats.get(platform, 0) + 1
 
     return {
         'status': 'success',
         'project_name': project_data.get('name'),
         'total_designs': len(design_list),
+        'platform_summary': platform_stats,
         'designs': design_list
     }
 
@@ -4802,6 +5272,7 @@ async def lanhu_get_designs(
 async def lanhu_get_ai_analyze_design_result(
         url: Annotated[str, "Lanhu URL WITHOUT docId (indicates UI design project). Example: https://lanhuapp.com/web/#/item/project/stage?tid=xxx&pid=xxx"],
         design_names: Annotated[Union[str, List[str]], "Design name(s) or index number(s). 'all' = all designs. Number (e.g. 6) = the 6th item in lanhu_get_designs list (by 'index' field), NOT by name prefix. Exact name (e.g. '6_friend页_挂件墙') = match by full name. Get names/index from lanhu_get_designs first."],
+        unit: Annotated[str, "Output unit for dimensions: 'px' (default, raw design pixels), 'pt' (iOS points, divides by 2 for @2x designs), 'dp' (Android dp, same as pt)."] = 'px',
         ctx: Context = None
 ) -> List[Union[str, Image]]:
     """
@@ -5038,8 +5509,10 @@ async def lanhu_get_ai_analyze_design_result(
                     params['project_id']
                 )
                 
+                # 根据 unit 计算缩放比例
+                design_scale = 2.0 if unit in ('pt', 'dp') else 1.0
                 # 转换为 HTML 并压缩（与 TS 端一致，减少 token）
-                html_code = minify_html(convert_lanhu_to_html(schema_json))
+                html_code = minify_html(convert_lanhu_to_html(schema_json, design_scale, unit))
                 
                 # 远程图片 URL 替换为本地路径，生成下载映射表
                 html_code, image_url_mapping = _localize_image_urls(html_code, design['name'])
@@ -5617,6 +6090,207 @@ async def lanhu_get_design_slices(
         }
     finally:
         await extractor.close()
+
+
+@mcp.tool()
+async def lanhu_get_ios_design_slices(
+        url: Annotated[str, "Lanhu URL WITHOUT docId (indicates UI design project). Example: https://lanhuapp.com/web/#/item/project/stage?tid=xxx&pid=xxx"],
+        design_name: Annotated[str, "Exact design name (single design only). Example: '首页设计', '登录页'. Must match exactly!"],
+        include_metadata: Annotated[bool, "Include color, opacity, shadow info"] = True,
+        ctx: Context = None
+) -> dict:
+    """
+    [iOS UI Slices] 获取 iOS 专用的设计切图信息
+
+    相比 lanhu_get_design_slices，本工具专门针对 iOS 开发优化：
+    - 自动识别设计稿倍率 (@2x / @3x)
+    - 返回逻辑尺寸 (pt) 和实际尺寸 (px)
+    - 生成 iOS 资源文件名推荐
+
+    USE THIS WHEN user says: iOS切图, iOS图标, iOS素材, iOS资源, 苹果切图, iPhone切图
+    DO NOT USE for: Android切图, Web资源
+
+    Returns:
+        iOS 优化后的切图列表，包含逻辑尺寸和多倍率信息
+    """
+    extractor = LanhuExtractor()
+    try:
+        # 1. 获取设计图列表
+        designs_data = await _get_designs_internal(extractor, url)
+
+        if designs_data['status'] != 'success':
+            return {
+                'status': 'error',
+                'message': designs_data.get('message', 'Failed to get designs')
+            }
+
+        # 2. 解析URL获取参数
+        params = extractor.parse_url(url)
+
+        # 3. 查找指定的设计图
+        target_design = None
+        for design in designs_data['designs']:
+            if design['name'] == design_name:
+                target_design = design
+                break
+
+        if not target_design:
+            available_names = [d['name'] for d in designs_data['designs']]
+            return {
+                'status': 'error',
+                'message': f"Design '{design_name}' does not exist",
+                'available_designs': available_names
+            }
+
+        # 4. 获取切图信息
+        slices_data = await extractor.get_design_slices_info(
+            image_id=target_design['id'],
+            team_id=params['team_id'],
+            project_id=params['project_id'],
+            include_metadata=include_metadata
+        )
+
+        # 5. iOS 优化处理
+        ios_info = slices_data.get('ios_adaptation', {})
+        scale = ios_info.get('scale', 2.0)
+        scale_label = ios_info.get('scale_label', '@2x')
+        device_type = ios_info.get('device_type', 'unknown')
+
+        # 处理每个切图，添加 iOS 友好的尺寸信息
+        ios_slices = []
+        for slice_item in slices_data.get('slices', []):
+            # 解析原始尺寸
+            size_str = slice_item.get('size', '0x0')
+            try:
+                raw_w, raw_h = map(int, size_str.split('x'))
+            except:
+                raw_w, raw_h = 0, 0
+
+            # 计算逻辑尺寸 (pt)
+            logical_w = round(raw_w / scale, 1)
+            logical_h = round(raw_h / scale, 1)
+
+            # iOS 优化后的切图信息
+            ios_slice = {
+                **slice_item,
+                'ios_info': {
+                    'logical_pt': {
+                        'width': logical_w,
+                        'height': logical_h,
+                        'unit': 'pt',
+                        'description': 'iOS 开发使用的逻辑尺寸'
+                    },
+                    'actual_px': {
+                        'width': raw_w,
+                        'height': raw_h,
+                        'scale': scale,
+                        'scale_label': scale_label,
+                        'unit': 'px',
+                        'description': f'原始像素尺寸 @{scale_label}'
+                    },
+                    'asset_filename': _generate_ios_asset_name(slice_item, logical_w, logical_h),
+                    'asset_scale': scale_label,
+                    'asset_unit': 'pt'
+                }
+            }
+            ios_slices.append(ios_slice)
+
+        # 6. 构建 iOS 资源目录建议
+        ios_directory_guide = {
+            'app_icon': 'Assets.xcassets/AppIcon.appiconset/',
+            'launch_image': 'Assets.xcassets/LaunchImage.launchimage/',
+            'images': 'Assets.xcassets/Images/',
+            'custom_icons': 'Assets.xcassets/Icons/',
+        }
+
+        # 7. 返回 iOS 优化后的结果
+        return {
+            'status': 'success',
+            'design_id': slices_data['design_id'],
+            'design_name': slices_data['design_name'],
+            'ios_optimized': True,
+            'ios_design_info': {
+                'platform': 'iOS',
+                'device_type': device_type,
+                'canvas_size': {
+                    'width_px': slices_data['canvas_size']['width'],
+                    'height_px': slices_data['canvas_size']['height'],
+                    'width_pt': round(slices_data['canvas_size']['width'] / scale, 1),
+                    'height_pt': round(slices_data['canvas_size']['height'] / scale, 1),
+                    'scale': scale,
+                    'scale_label': scale_label,
+                    'matched_device': ios_info.get('matched_device'),
+                },
+                'recommended_unit': 'pt',
+                'confidence': ios_info.get('confidence', 0.0)
+            },
+            'total_slices': len(ios_slices),
+            'slices': ios_slices,
+            'ios_directory_guide': ios_directory_guide,
+            'ai_workflow_guide': {
+                'instructions': 'iOS 切图下载工作流',
+                'steps': [
+                    '1. 分析切图类型（icon、background、logo等）',
+                    '2. 选择合适的 Assets.xcassets 目录',
+                    '3. 生成 iOS 友好的资源文件名（使用 pt 尺寸）',
+                    '4. 下载并保存为 @1x/@2x/@3x 多倍率资源',
+                    '5. 创建或更新 Contents.json'
+                ],
+                'naming_convention': {
+                    'pattern': '{name}_{width}pt_{height}pt@{scale}x.png',
+                    'examples': [
+                        'icon_24pt_24pt@2x.png',
+                        'logo_100pt_100pt@3x.png',
+                        'bg_200pt_150pt@2x.png'
+                    ]
+                },
+                'important_notes': [
+                    '⚠️ iOS 开发使用 pt（逻辑尺寸），不是 px（像素）',
+                    '⚠️ @2x 用于非刘海屏 iPhone，@3x 用于刘海屏 iPhone',
+                    '⚠️ 资源文件名必须包含 pt 尺寸和倍率标识',
+                    '📱 确保 Assets.xcassets 中的 Contents.json 配置正确'
+                ]
+            }
+        }
+
+    except Exception as e:
+        return {
+            'status': 'error',
+            'message': str(e)
+        }
+    finally:
+        await extractor.close()
+
+
+def _generate_ios_asset_name(slice_item: dict, logical_w: float, logical_h: float) -> str:
+    """
+    生成 iOS 友好的资源文件名
+
+    Args:
+        slice_item: 切图信息
+        logical_w: 逻辑宽度 (pt)
+        logical_h: 逻辑高度 (pt)
+
+    Returns:
+        iOS 资源文件名
+    """
+    # 获取切片名称
+    name = slice_item.get('name', 'unknown')
+    parent = slice_item.get('parent_name', '')
+
+    # 清理名称（移除特殊字符）
+    name = re.sub(r'[^\w\u4e00-\u9fff-]', '_', name)
+    parent = re.sub(r'[^\w\u4e00-\u9fff-]', '_', parent) if parent else ''
+
+    # 构建文件名
+    if parent:
+        filename = f"{parent}_{name}_{int(logical_w)}pt_{int(logical_h)}pt"
+    else:
+        filename = f"{name}_{int(logical_w)}pt_{int(logical_h)}pt"
+
+    # 添加格式
+    format_type = slice_item.get('format', 'png')
+    return f"{filename}.{format_type}"
 
 
 # ==================== 团队留言板功能 ====================
@@ -6278,5 +6952,4 @@ if __name__ == "__main__":
     SERVER_HOST = os.getenv("SERVER_HOST", "0.0.0.0")
     SERVER_PORT = int(os.getenv("SERVER_PORT", "8000"))
     mcp.run(transport="http", path="/mcp", host=SERVER_HOST, port=SERVER_PORT)
-
 

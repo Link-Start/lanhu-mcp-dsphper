@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>小悦云APP · 创作区 · 控件分离</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #080A12; display: flex; flex-direction: column; align-items: center; padding: 16px; font-family: 'PingFang SC', sans-serif; }
+h1 { color: #fff; font-size: 15px; margin-bottom: 3px; }
+.sub { color: #555; font-size: 11px; margin-bottom: 16px; }
+.phone { position: relative; width: 375px; height: 906pt; background: #0D0E1A; border-radius: 44px; border: 2px solid #1a1e30; overflow: hidden; flex-shrink: 0; }
+.ctrl { position: absolute; display: flex; align-items: center; justify-content: center; font-size: 8px; color: rgba(255,255,255,0.45); font-family: monospace; pointer-events: none; border: 1.5px dashed rgba(255,255,255,0.12); overflow: hidden; }
+.ctrl:hover { border-color: #00CBE0; border-style: solid; }
+.lbl { position: absolute; top:-16px; left:0; font-size:8px; color:#00CBE0; white-space:nowrap; font-family:monospace; background:rgba(0,12,20,0.85); padding:1px 4px; border-radius:2px; pointer-events:none; z-index:10; }
+.prp { position:absolute; bottom:-13px; left:0; font-size:7px; color:rgba(255,255,255,0.25); white-space:nowrap; font-family:monospace; pointer-events:none; }
+.grid { position:absolute; inset:0; pointer-events:none; z-index:200; display:none; }
+.grid.show { display:block; }
+.gh { position:absolute; left:0; right:0; height:1px; }
+.gv { position:absolute; top:0; bottom:0; width:1px; }
+.db { position:fixed; top:14px; right:14px; background:rgba(0,200,220,0.1); color:#00CBE0; border:1px solid #00CBE0; padding:4px 12px; border-radius:18px; cursor:pointer; font-size:10px; z-index:999; }
+.info { width:700px; background:#0c0e1a; border-radius:10px; padding:14px; color:#fff; font-size:11px; border:1px solid #151a2a; margin-top:14px; max-height:420px; overflow-y:auto; }
+.info-title { color:#00CBE0; font-weight:600; font-size:12px; margin-bottom:8px; border-bottom:1px solid #151a2a; padding-bottom:5px; }
+.row { display:flex; gap:6px; padding:4px 0; border-bottom:1px solid #0e1120; align-items:center; }
+.n { color:#445; width:26px; flex-shrink:0; }
+.nm { color:#e0eeff; width:120px; flex-shrink:0; font-weight:500; }
+.pos { color:#556; width:170px; }
+.pr { color:#334; flex:1; }
+.gm { color:#543EEA; }
+.cd { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:3px; vertical-align:middle; }
+.scroll-wrap { overflow-y:auto; max-height:calc(100vh - 40px); }
+</style>
+</head>
+<body>
+<button class="db" onclick="document.getElementById('g').classList.toggle('show')">参考线</button>
+<h1>小悦云APP · 创作区</h1>
+<p class="sub">375×906pt · 蓝湖标注 · 101个控件 · hover查看详情</p>
+<div class="scroll-wrap">
+<div class="phone" id="phone">
+<!-- 控件分离图开始 -->
+<div class="ctrl" style="left:0pt;top:0pt;width:375pt;height:906pt;background:#0D0E1A;z-index:1;"><span class="lbl">#1 创作区(页面容器)</span></div>
+<div class="ctrl" style="left:0pt;top:0pt;width:375pt;height:389pt;background:#131E35;z-index:2;"><span class="lbl">#5 矩形(3色渐变)</span><span class="prp">渐变:#131E35,#1C2B47,#020120</span></div>
+<div class="ctrl" style="left:99.5pt;top:0pt;width:178.5pt;height:108pt;background:#228E80;z-index:3;"><span class="lbl">#6 椭圆形装饰</span><span class="prp">#228E80</span></div>
+<div class="ctrl" style="left:0pt;top:0pt;width:375pt;height:88pt;background:#FFFFFF;opacity:0.06;z-index:4;"><span class="lbl">#9 顶部遮罩?</span><span class="prp">#FFFFFF 6%opacity</span></div>
+<!-- 顶部右侧小图标碎片 -->
+<div class="ctrl" style="left:27.5pt;top:19.5pt;width:28.5pt;height:11pt;background:#FFFFFF;z-index:5;"><span class="lbl">#13 Fill(?)</span></div>
+<div class="ctrl" style="left:292.5pt;top:19.5pt;width:67pt;height:11pt;background:#FFFFFF;z-index:5;"><span class="lbl">#10 item_23</span></div>
+<!-- 欢迎语 -->
+<div class="ctrl" style="left:12pt;top:100pt;width:273pt;height:18.5pt;background:#FFFFFF;z-index:6;"><span class="lbl">#20 欢迎语</span><span class="prp">苹方-简 常规体 13pt 左对齐</span></div>
+<!-- ===== 卡片1: 形象克隆 y=130.5 ===== -->
+<div class="ctrl" style="left:8pt;top:130.5pt;width:359pt;height:90pt;background:#191C2A;border-radius:17pt;z-index:10;"><span class="lbl">#21 卡片背景(形象克隆)</span><span class="prp">#191C2A 圆角17pt</span></div>
+<div class="ctrl" style="left:11pt;top:133.5pt;width:84pt;height:84pt;background:#0D0E1A;border-radius:17pt;z-index:11;"><span class="lbl">#22 图标容器</span><span class="prp">#0D0E1A 圆角17pt 84x84pt</span></div>
+<div class="ctrl" style="left:11pt;top:133.5pt;width:84pt;height:84pt;z-index:12;"><span class="lbl">#23 图标-形象克隆(?)</span><span class="prp">苹方-简 常规体 14pt 居中?</span></div>
+<div class="ctrl" style="left:115pt;top:151.5pt;width:101.5pt;height:20pt;background:#888B97;z-index:13;"><span class="lbl">#24 副标题-数字人形象克隆</span><span class="prp">苹方-简 常规体 14pt 居中对齐 #888B97</span></div>
+<div class="ctrl" style="left:115pt;top:179.5pt;width:56pt;height:20pt;background:#FFFFFF;z-index:13;"><span class="lbl">#27 主标题-形象克隆</span><span class="prp">苹方-简 常规体 14pt 左对齐 #FFFFFF</span></div>
+<div class="ctrl" style="left:335pt;top:169.5pt;width:12pt;height:12pt;z-index:14;"><span class="lbl">#26 箭头右</span><span class="prp">12x12pt</span></div>
+<!-- ===== 卡片2: 声音克隆 y=228.5 ===== -->
+<div class="ctrl" style="left:8pt;top:228.5pt;width:359pt;height:90pt;background:#191C2A;border-radius:17pt;z-index:10;"><span class="lbl">#28 卡片背景(声音克隆)</span><span class="prp">#191C2A 圆角17pt</span></div>
+<div class="ctrl" style="left:11pt;top:231.5pt;width:84pt;height:84pt;background:#0D0E1A;border-radius:17pt;z-index:11;"><span class="lbl">#29 图标容器</span><span class="prp">#0D0E1A 圆角17pt</span></div>
+<div class="ctrl" style="left:11pt;top:231.5pt;width:84pt;height:84pt;z-index:12;"><span class="lbl">#30 图标-声音克隆(?)</span></div>
+<div class="ctrl" style="left:115pt;top:249.5pt;width:101.5pt;height:20pt;background:#888B97;z-index:13;"><span class="lbl">#31 副标题-数字人声音克隆</span><span class="prp">苹方-简 常规体 14pt 居中对齐 #888B97</span></div>
+<div class="ctrl" style="left:115pt;top:277.5pt;width:56pt;height:20pt;background:#FFFFFF;z-index:13;"><span class="lbl">#34 主标题-声音克隆</span><span class="prp">苹方-简 常规体 14pt 左对齐 #FFFFFF</span></div>
+<div class="ctrl" style="left:335pt;top:267.5pt;width:12pt;height:12pt;z-index:14;"><span class="lbl">#33 箭头右</span></div>
+<!-- ===== 卡片3: 视频合成 y=326.5 ===== -->
+<div class="ctrl" style="left:8pt;top:326.5pt;width:359pt;height:90pt;background:#191C2A;border-radius:17pt;z-index:10;"><span class="lbl">#35 卡片背景(视频合成)</span><span class="prp">#191C2A 圆角17pt</span></div>
+<div class="ctrl" style="left:11pt;top:329.5pt;width:84pt;height:84pt;background:#0D0E1A;border-radius:17pt;z-index:11;"><span class="lbl">#36 图标容器</span></div>
+<div class="ctrl" style="left:11pt;top:329.5pt;width:84pt;height:84pt;z-index:12;"><span class="lbl">#37 图标-视频合成(?)</span></div>
+<div class="ctrl" style="left:115pt;top:347.5pt;width:101.5pt;height:20pt;background:#888B97;z-index:13;"><span class="lbl">#38 副标题-数字人视频合成</span><span class="prp">苹方-简 常规体 14pt 居中对齐 #888B97</span></div>
+<div class="ctrl" style="left:115pt;top:375.5pt;width:70pt;height:20pt;background:#FFFFFF;z-index:13;"><span class="lbl">#41 主标题-数字人视频</span><span class="prp">苹方-简 常规体 14pt 左对齐 #FFFFFF</span></div>
+<div class="ctrl" style="left:335pt;top:365.5pt;width:12pt;height:12pt;z-index:14;"><span class="lbl">#40 箭头右</span></div>
+<!-- ===== 卡片4: 视频创作 y=424.5 ===== -->
+<div class="ctrl" style="left:8pt;top:424.5pt;width:359pt;height:90pt;background:#191C2A;border-radius:17pt;z-index:10;"><span class="lbl">#42 卡片背景(视频创作)</span><span class="prp">#191C2A 圆角17pt</span></div>
+<div class="ctrl" style="left:11pt;top:427.5pt;width:84pt;height:84pt;background:#0D0E1A;border-radius:17pt;z-index:11;"><span class="lbl">#43 图标容器</span></div>
+<div class="ctrl" style="left:11pt;top:427.5pt;width:84pt;height:84pt;z-index:12;"><span class="lbl">#44 图标-视频创作(?)</span></div>
+<div class="ctrl" style="left:115pt;top:445.5pt;width:116pt;height:20pt;background:#888B97;z-index:13;"><span class="lbl">#45 副标题-真人原声视频制作</span><span class="prp">苹方-简 常规体 14pt 居中对齐 #888B97</span></div>
+<div class="ctrl" style="left:115pt;top:473.5pt;width:84pt;height:20pt;background:#FFFFFF;z-index:13;"><span class="lbl">#48 主标题-真人原声视频</span><span class="prp">苹方-简 常规体 14pt 左对齐 #FFFFFF</span></div>
+<div class="ctrl" style="left:335pt;top:463.5pt;width:12pt;height:12pt;z-index:14;"><span class="lbl">#47 箭头右</span></div>
+<!-- ===== 卡片5: 行业视频 y=522.5 ===== -->
+<div class="ctrl" style="left:8pt;top:522.5pt;width:359pt;height:90pt;background:#191C2A;border-radius:17pt;z-index:10;"><span class="lbl">#49 卡片背景(行业视频)</span><span class="prp">#191C2A 圆角17pt</span></div>
+<div class="ctrl" style="left:11pt;top:525.5pt;width:84pt;height:84pt;background:#0D0E1A;border-radius:17pt;z-index:11;"><span class="lbl">#50 图标容器</span></div>
+<div class="ctrl" style="left:11pt;top:525.5pt;width:84pt;height:84pt;z-index:12;"><span class="lbl">#51 图标-行业视频(?)</span></div>
+<div class="ctrl" style="left:115pt;top:543.5pt;width:160pt;height:20pt;background:#888B97;z-index:13;"><span class="lbl">#52 副标题-智能化生成行业专属视频</span><span class="prp">苹方-简 常规体 14pt 居中对齐 #888B97</span></div>
+<div class="ctrl" style="left:115pt;top:571.5pt;width:70pt;height:20pt;background:#FFFFFF;z-index:13;"><span class="lbl">#55 主标题-视频创意师</span><span class="prp">苹方-简 常规体 14pt 居中对齐 #FFFFFF</span></div>
+<div class="ctrl" style="left:335pt;top:561.5pt;width:12pt;height:12pt;z-index:14;"><span class="lbl">#54 箭头右</span></div>
+<!-- ===== 卡片6: 图文设计师 y=620.5 ===== -->
+<div class="ctrl" style="left:8pt;top:620.5pt;width:359pt;height:90pt;background:#191C2A;border-radius:17pt;z-index:10;"><span class="lbl">#56 卡片背景(图文设计师)</span><span class="prp">#191C2A 圆角17pt</span></div>
+<div class="ctrl" style="left:11pt;top:623.5pt;width:84pt;height:84pt;background:#0D0E1A;border-radius:17pt;z-index:11;"><span class="lbl">#57 图标容器</span></div>
+<div class="ctrl" style="left:11pt;top:623.5pt;width:84pt;height:84pt;z-index:12;"><span class="lbl">#58 图标-小悦专属设计师(?)</span></div>
+<div class="ctrl" style="left:115.5pt;top:641.5pt;width:144pt;height:20pt;background:#888B97;z-index:13;"><span class="lbl">#59 副标题-个人IP一键全智能打造</span><span class="prp">苹方-简 常规体 14pt 居中对齐 #888B97</span></div>
+<div class="ctrl" style="left:115pt;top:669.5pt;width:70pt;height:20pt;background:#FFFFFF;z-index:13;"><span class="lbl">#62 主标题-图文设计师</span><span class="prp">苹方-简 常规体 14pt 左对齐 #FFFFFF</span></div>
+<div class="ctrl" style="left:335pt;top:659.5pt;width:12pt;height:12pt;z-index:14;"><span class="lbl">#61 箭头右</span></div>
+<!-- ===== 卡片7: 个性化IP y=718.5 ===== -->
+<div class="ctrl" style="left:8pt;top:718.5pt;width:359pt;height:90pt;background:#191C2A;border-radius:17pt;z-index:10;"><span class="lbl">#63 卡片背景(个性化IP)</span><span class="prp">#191C2A 圆角17pt</span></div>
+<div class="ctrl" style="left:11pt;top:721.5pt;width:84pt;height:84pt;background:#0D0E1A;border-radius:17pt;z-index:11;"><span class="lbl">#64 图标容器</span></div>
+<div class="ctrl" style="left:11pt;top:721.5pt;width:84pt;height:84pt;z-index:12;"><span class="lbl">#65 图标-个性化IP(?)</span></div>
+<div class="ctrl" style="left:115pt;top:739.5pt;width:144pt;height:20pt;background:#888B97;z-index:13;"><span class="lbl">#66 副标题-自动生成个性化IP视频</span><span class="prp">苹方-简 常规体 14pt 居中对齐 #888B97</span></div>
+<div class="ctrl" style="left:115pt;top:767.5pt;width:98pt;height:20pt;background:#FFFFFF;z-index:13;"><span class="lbl">#69 主标题-企业视频工作流</span><span class="prp">苹方-简 常规体 14pt 左对齐 #FFFFFF</span></div>
+<div class="ctrl" style="left:335pt;top:757.5pt;width:12pt;height:12pt;z-index:14;"><span class="lbl">#68 箭头右</span></div>
+<!-- ===== Tab Bar y=823.5 ===== -->
+<div class="ctrl" style="left:0pt;top:823.5pt;width:375pt;height:82.5pt;background:#202138;z-index:20;"><span class="lbl">#71 TabBar背景</span><span class="prp">#202138 375x82.5pt</span></div>
+<!-- Tab图标: 首页 -->
+<div class="ctrl" style="left:35pt;top:829.5pt;width:23pt;height:37pt;background:rgba(0,0,0,0);z-index:21;"><span class="lbl">#74 首页图标(?)</span><span class="prp">23x37pt 图标区</span></div>
+<div class="ctrl" style="left:36.5pt;top:829.5pt;width:20pt;height:20pt;background:#000000;border-radius:5pt;z-index:22;"><span class="lbl">#77 首页图标-bg</span><span class="prp">#000000 20x20 圆角5pt</span></div>
+<div class="ctrl" style="left:37.5pt;top:830pt;width:18pt;height:19pt;background:#7F8892;z-index:23;"><span class="lbl">#84 形状结合-首页</span><span class="prp">#7F8892</span></div>
+<!-- Tab图标: 创作 -->
+<div class="ctrl" style="left:128.5pt;top:829.5pt;width:20pt;height:20pt;background:#000000;border-radius:5pt;z-index:22;"><span class="lbl">#83 创作图标-bg</span><span class="prp">#000000 圆角5pt</span></div>
+<div class="ctrl" style="left:129.11pt;top:830.5pt;width:10.83pt;height:10.83pt;background:linear-gradient(#543EEA,#00CBE0);z-index:24;"><span class="lbl">#89 路径(渐变)创作</span><span class="prp" style="color:#543EEA">渐变:#543EEA→#00CBE0</span></div>
+<div class="ctrl" style="left:138.94pt;top:838pt;width:10.83pt;height:10.83pt;background:linear-gradient(#543EEA,#00CBE0);z-index:24;"><span class="lbl">#94 路径备份2(渐变)</span><span class="prp" style="color:#543EEA">渐变:#543EEA→#00CBE0</span></div>
+<div class="ctrl" style="left:139.94pt;top:838pt;width:10.83pt;height:10.83pt;background:linear-gradient(#543EEA,#00CBE0);z-index:24;"><span class="lbl">#93 路径备份3(渐变)</span><span class="prp" style="color:#543EEA">渐变:#543EEA→#00CBE0</span></div>
+<!-- Tab图标: 作品 -->
+<div class="ctrl" style="left:227pt;top:829.5pt;width:20pt;height:20pt;background:#000000;border-radius:5pt;z-index:22;"><span class="lbl">#73 作品图标-bg</span><span class="prp">#000000 圆角5pt</span></div>
+<div class="ctrl" style="left:229pt;top:831pt;width:12.83pt;height:17.1pt;background:#7F8892;z-index:24;"><span class="lbl">#91 路径-作品</span><span class="prp">#7F8892</span></div>
+<div class="ctrl" style="left:231.57pt;top:834.21pt;width:3.42pt;height:0.43pt;background:#7F8892;z-index:24;"><span class="lbl">#92 路径装饰</span></div>
+<div class="ctrl" style="left:231.57pt;top:837.2pt;width:5.13pt;height:0.43pt;background:#7F8892;z-index:24;"><span class="lbl">#92b 路径装饰2</span></div>
+<!-- Tab图标: 我的 -->
+<div class="ctrl" style="left:317pt;top:829.5pt;width:23pt;height:37pt;background:rgba(0,0,0,0);z-index:21;"><span class="lbl">#78 我的图标(?)</span></div>
+<div class="ctrl" style="left:318.5pt;top:829.5pt;width:20pt;height:20pt;background:#000000;border-radius:5pt;z-index:22;"><span class="lbl">#81 我的图标-bg</span><span class="prp">#000000 圆角5pt</span></div>
+<div class="ctrl" style="left:320.5pt;top:830.5pt;width:16.2pt;height:18pt;background:#7F8892;z-index:24;"><span class="lbl">#96 路径-我的</span><span class="prp">#7F8892</span></div>
+<!-- Tab文字 -->
+<div class="ctrl" style="left:35pt;top:851.5pt;width:23pt;height:15pt;background:#7F8892;z-index:25;"><span class="lbl">#98 Tab-首页</span><span class="prp">苹方-简 常规体 11pt 居中 #7F8892</span></div>
+<div class="ctrl" style="left:121.5pt;top:851.5pt;width:34.5pt;height:15pt;background:#00CBE0;z-index:25;"><span class="lbl">#100 Tab-创作区(选中)</span><span class="prp" style="color:#00CBE0">苹方-简 常规体 11pt 居中 #00CBE0</span></div>
+<div class="ctrl" style="left:219pt;top:851.5pt;width:34.5pt;height:15pt;background:#7F8892;z-index:25;"><span class="lbl">#97 Tab-作品区</span><span class="prp">苹方-简 常规体 11pt 居中 #7F8892</span></div>
+<div class="ctrl" style="left:317pt;top:851.5pt;width:23pt;height:15pt;background:#7F8892;z-index:25;"><span class="lbl">#99 Tab-我的</span><span class="prp">苹方-简 常规体 11pt 居中 #7F8892</span></div>
+<!-- Home Indicator -->
+<div class="ctrl" style="left:120.5pt;top:893pt;width:134pt;height:5pt;background:#FFFFFF;border-radius:2.5pt;z-index:30;"><span class="lbl">#101 HomeIndicator</span><span class="prp">#FFFFFF 134x5pt 圆角2.5pt</span></div>
+<!-- 参考线 -->
+<div class="grid" id="g">
+  <div class="gh" style="top:100pt;background:rgba(255,200,0,0.3);"></div>
+  <div class="gh" style="top:389pt;background:rgba(255,80,0,0.5);"></div>
+  <div class="gh" style="top:130.5pt;background:rgba(0,180,255,0.2);"></div>
+  <div class="gh" style="top:228.5pt;background:rgba(0,180,255,0.2);"></div>
+  <div class="gh" style="top:326.5pt;background:rgba(0,180,255,0.2);"></div>
+  <div class="gh" style="top:424.5pt;background:rgba(0,180,255,0.2);"></div>
+  <div class="gh" style="top:522.5pt;background:rgba(0,180,255,0.2);"></div>
+  <div class="gh" style="top:620.5pt;background:rgba(0,180,255,0.2);"></div>
+  <div class="gh" style="top:718.5pt;background:rgba(0,180,255,0.2);"></div>
+  <div class="gh" style="top:823.5pt;background:rgba(0,220,255,0.5);"></div>
+  <div class="gh" style="top:893pt;background:rgba(0,255,100,0.5);"></div>
+  <div class="gh" style="top:851.5pt;background:rgba(255,255,0,0.15);"></div>
+  <div class="gv" style="left:8pt;background:rgba(0,255,0,0.2);"></div>
+  <div class="gv" style="left:11pt;background:rgba(255,0,100,0.2);"></div>
+  <div class="gv" style="left:95pt;background:rgba(255,0,100,0.2);"></div>
+  <div class="gv" style="left:115pt;background:rgba(0,100,255,0.2);"></div>
+  <div class="gv" style="left:335pt;background:rgba(0,255,0,0.2);"></div>
+</div>
+</div><!-- /phone -->
+</div><!-- /scroll-wrap -->
+
+<!-- 右侧控件清单 -->
+<div class="info">
+  <div class="info-title">控件清单（101个，按 y 坐标排序，跳过5个超小碎片）</div>
+  <div class="row" style="background:#0a0c18;padding:6px 0 4px;">
+    <span class="n">#</span>
+    <span class="nm">控件名</span>
+    <span class="pos">位置/尺寸</span>
+    <span class="pr">属性</span>
+  </div>
+  <div class="row"><span class="n">#1</span><span class="nm">创作区(容器)</span><span class="pos">x:0 y:0 w:375 h:906</span><span class="pr">#FFFFFF</span></div>
+  <div class="row"><span class="n">#2</span><span class="nm">矩形(背景)</span><span class="pos">x:0 y:0 w:375 h:906</span><span class="pr">#0D0E1A</span></div>
+  <div class="row"><span class="n">#5</span><span class="nm">矩形(渐变背景)</span><span class="pos">x:0 y:0 w:375 h:389</span><span class="pr" style="color:#543EEA">🎨3色渐变:#131E35→#1C2B47→#020120</span></div>
+  <div class="row"><span class="n">#6</span><span class="nm">椭圆形装饰</span><span class="pos">x:99.5 y:0 w:178.5 h:108</span><span class="pr">#228E80 border-radius:50%</span></div>
+  <div class="row"><span class="n">#9</span><span class="nm">item_22</span><span class="pos">x:0 y:0 w:375 h:88</span><span class="pr">#FFFFFF 6%透明度(顶部遮罩?)</span></div>
+  <div class="row"><span class="n">#20</span><span class="nm">欢迎语</span><span class="pos">x:12 y:100 w:273 h:18.5</span><span class="pr">苹方-简 常规体 13pt 左对齐 #FFFFFF</span></div>
+  <div class="row" style="background:#0e1020;"><span class="n">#21</span><span class="nm">卡片1背景</span><span class="pos">x:8 y:130.5 w:359 h:90</span><span class="pr">#191C2A 圆角:17pt</span></div>
+  <div class="row"><span class="n">#22</span><span class="nm">图标容器(形象克隆)</span><span class="pos">x:11 y:133.5 w:84 h:84</span><span class="pr">#0D0E1A 圆角:17pt (图标本身?)</span></div>
+  <div class="row"><span class="n">#23</span><span class="nm">图标-形象克隆(?)</span><span class="pos">x:11 y:133.5 w:84 h:84</span><span class="pr">苹方-简 常规体 14pt 居中? 文字在图标内?</span></div>
+  <div class="row"><span class="n">#24</span><span class="nm">副标题-数字人形象克隆</span><span class="pos">x:115 y:151.5 w:101.5 h:20</span><span class="pr">苹方-简 常规体 14pt 居中 #888B97</span></div>
+  <div class="row"><span class="n">#27</span><span class="nm">主标题-形象克隆</span><span class="pos">x:115 y:179.5 w:56 h:20</span><span class="pr">苹方-简 常规体 14pt 左对齐 #FFFFFF</span></div>
+  <div class="row"><span class="n">#26</span><span class="nm">箭头右</span><span class="pos">x:335 y:169.5 w:12 h:12</span><span class="pr">12x12pt</span></div>
+  <div class="row" style="background:#0e1020;"><span class="n">#28</span><span class="nm">卡片2背景</span><span class="pos">x:8 y:228.5 w:359 h:90</span><span class="pr">#191C2A 圆角:17pt</span></div>
+  <div class="row"><span class="n">#29</span><span class="nm">图标容器(声音克隆)</span><span class="pos">x:11 y:231.5 w:84 h:84</span><span class="pr">#0D0E1A 圆角:17pt</span></div>
+  <div class="row"><span class="n">#30</span><span class="nm">图标-声音克隆(?)</span><span class="pos">x:11 y:231.5 w:84 h:84</span><span class="pr">苹方-简 常规体 14pt</span></div>
+  <div class="row"><span class="n">#31</span><span class="nm">副标题-数字人声音克隆</span><span class="pos">x:115 y:249.5 w:101.5 h:20</span><span class="pr">苹方-简 常规体 14pt 居中 #888B97</span></div>
+  <div class="row"><span class="n">#34</span><span class="nm">主标题-声音克隆</span><span class="pos">x:115 y:277.5 w:56 h:20</span><span class="pr">苹方-简 常规体 14pt 左对齐 #FFFFFF</span></div>
+  <div class="row"><span class="n">#33</span><span class="nm">箭头右</span><span class="pos">x:335 y:267.5 w:12 h:12</span><span class="pr"></span></div>
+  <div class="row" style="background:#0e1020;"><span class="n">#35</span><span class="nm">卡片3背景</span><span class="pos">x:8 y:326.5 w:359 h:90</span><span class="pr">#191C2A 圆角:17pt</span></div>
+  <div class="row"><span class="n">#36</span><span class="nm">图标容器(视频合成)</span><span class="pos">x:11 y:329.5 w:84 h:84</span><span class="pr">#0D0E1A 圆角:17pt</span></div>
+  <div class="row"><span class="n">#37</span><span class="nm">图标-视频合成(?)</span><span class="pos">x:11 y:329.5 w:84 h:84</span><span class="pr">苹方-简 常规体 14pt</span></div>
+  <div class="row"><span class="n">#38</span><span class="nm">副标题-数字人视频合成</span><span class="pos">x:115 y:347.5 w:101.5 h:20</span><span class="pr">苹方-简 常规体 14pt 居中 #888B97</span></div>
+  <div class="row"><span class="n">#41</span><span class="nm">主标题-数字人视频</span><span class="pos">x:115 y:375.5 w:70 h:20</span><span class="pr">苹方-简 常规体 14pt 左对齐 #FFFFFF</span></div>
+  <div class="row"><span class="n">#40</span><span class="nm">箭头右</span><span class="pos">x:335 y:365.5 w:12 h:12</span><span class="pr"></span></div>
+  <div class="row" style="background:#0e1020;"><span class="n">#42</span><span class="nm">卡片4背景</span><span class="pos">x:8 y:424.5 w:359 h:90</span><span class="pr">#191C2A 圆角:17pt</span></div>
+  <div class="row"><span class="n">#43</span><span class="nm">图标容器(视频创作)</span><span class="pos">x:11 y:427.5 w:84 h:84</span><span class="pr">#0D0E1A 圆角:17pt</span></div>
+  <div class="row"><span class="n">#44</span><span class="nm">图标-视频创作(?)</span><span class="pos">x:11 y:427.5 w:84 h:84</span><span class="pr">苹方-简 常规体 14pt</span></div>
+  <div class="row"><span class="n">#45</span><span class="nm">副标题-真人原声视频制作</span><span class="pos">x:115 y:445.5 w:116 h:20</span><span class="pr">苹方-简 常规体 14pt 居中 #888B97</span></div>
+  <div class="row"><span class="n">#48</span><span class="nm">主标题-真人原声视频</span><span class="pos">x:115 y:473.5 w:84 h:20</span><span class="pr">苹方-简 常规体 14pt 左对齐 #FFFFFF</span></div>
+  <div class="row"><span class="n">#47</span><span class="nm">箭头右</span><span class="pos">x:335 y:463.5 w:12 h:12</span><span class="pr"></span></div>
+  <div class="row" style="background:#0e1020;"><span class="n">#49</span><span class="nm">卡片5背景</span><span class="pos">x:8 y:522.5 w:359 h:90</span><span class="pr">#191C2A 圆角:17pt</span></div>
+  <div class="row"><span class="n">#50</span><span class="nm">图标容器(行业视频)</span><span class="pos">x:11 y:525.5 w:84 h:84</span><span class="pr">#0D0E1A 圆角:17pt</span></div>
+  <div class="row"><span class="n">#51</span><span class="nm">图标-行业视频(?)</span><span class="pos">x:11 y:525.5 w:84 h:84</span><span class="pr">苹方-简 常规体 14pt</span></div>
+  <div class="row"><span class="n">#52</span><span class="nm">副标题-智能化生成行业专属视频</span><span class="pos">x:115 y:543.5 w:160 h:20</span><span class="pr">苹方-简 常规体 14pt 居中 #888B97</span></div>
+  <div class="row"><span class="n">#55</span><span class="nm">主标题-视频创意师</span><span class="pos">x:115 y:571.5 w:70 h:20</span><span class="pr">苹方-简 常规体 14pt 居中 #FFFFFF</span></div>
+  <div class="row"><span class="n">#54</span><span class="nm">箭头右</span><span class="pos">x:335 y:561.5 w:12 h:12</span><span class="pr"></span></div>
+  <div class="row" style="background:#0e1020;"><span class="n">#56</span><span class="nm">卡片6背景</span><span class="pos">x:8 y:620.5 w:359 h:90</span><span class="pr">#191C2A 圆角:17pt</span></div>
+  <div class="row"><span class="n">#57</span><span class="nm">图标容器(小悦专属设计师)</span><span class="pos">x:11 y:623.5 w:84 h:84</span><span class="pr">#0D0E1A 圆角:17pt</span></div>
+  <div class="row"><span class="n">#58</span><span class="nm">图标-小悦专属设计师(?)</span><span class="pos">x:11 y:623.5 w:84 h:84</span><span class="pr">苹方-简 常规体 14pt</span></div>
+  <div class="row"><span class="n">#59</span><span class="nm">副标题-个人IP一键全智能打造</span><span class="pos">x:115.5 y:641.5 w:144 h:20</span><span class="pr">苹方-简 常规体 14pt 居中 #888B97</span></div>
+  <div class="row"><span class="n">#62</span><span class="nm">主标题-图文设计师</span><span class="pos">x:115 y:669.5 w:70 h:20</span><span class="pr">苹方-简 常规体 14pt 左对齐 #FFFFFF</span></div>
+  <div class="row"><span class="n">#61</span><span class="nm">箭头右</span><span class="pos">x:335 y:659.5 w:12 h:12</span><span class="pr"></span></div>
+  <div class="row" style="background:#0e1020;"><span class="n">#63</span><span class="nm">卡片7背景</span><span class="pos">x:8 y:718.5 w:359 h:90</span><span class="pr">#191C2A 圆角:17pt</span></div>
+  <div class="row"><span class="n">#64</span><span class="nm">图标容器(个性化IP)</span><span class="pos">x:11 y:721.5 w:84 h:84</span><span class="pr">#0D0E1A 圆角:17pt</span></div>
+  <div class="row"><span class="n">#65</span><span class="nm">图标-个性化IP(?)</span><span class="pos">x:11 y:721.5 w:84 h:84</span><span class="pr">苹方-简 常规体 14pt</span></div>
+  <div class="row"><span class="n">#66</span><span class="nm">副标题-自动生成个性化IP视频</span><span class="pos">x:115 y:739.5 w:144 h:20</span><span class="pr">苹方-简 常规体 14pt 居中 #888B97</span></div>
+  <div class="row"><span class="n">#69</span><span class="nm">主标题-企业视频工作流</span><span class="pos">x:115 y:767.5 w:98 h:20</span><span class="pr">苹方-简 常规体 14pt 左对齐 #FFFFFF</span></div>
+  <div class="row"><span class="n">#68</span><span class="nm">箭头右</span><span class="pos">x:335 y:757.5 w:12 h:12</span><span class="pr"></span></div>
+  <div class="row" style="background:#080c18;"><span class="n">#71</span><span class="nm">TabBar背景</span><span class="pos">x:0 y:823.5 w:375 h:82.5</span><span class="pr">#202138</span></div>
+  <div class="row"><span class="n">#77</span><span class="nm">首页图标-bg</span><span class="pos">x:36.5 y:829.5 w:20 h:20</span><span class="pr">#000000 圆角5pt</span></div>
+  <div class="row"><span class="n">#84</span><span class="nm">形状结合-首页</span><span class="pos">x:37.5 y:830 w:18 h:19</span><span class="pr">#7F8892 (SVG路径?)</span></div>
+  <div class="row"><span class="n">#83</span><span class="nm">创作图标-bg</span><span class="pos">x:128.5 y:829.5 w:20 h:20</span><span class="pr">#000000 圆角5pt</span></div>
+  <div class="row"><span class="n">#89</span><span class="nm">路径(渐变)创作</span><span class="pos">x:133.11 y:830.5 w:10.83 h:10.83</span><span class="pr" style="color:#543EEA">🎨渐变:#543EEA→#00CBE0</span></div>
+  <div class="row"><span class="n">#94</span><span class="nm">路径备份2(渐变)</span><span class="pos">x:137.94 y:838 w:10.83 h:10.83</span><span class="pr" style="color:#543EEA">🎨渐变:#543EEA→#00CBE0</span></div>
+  <div class="row"><span class="n">#93</span><span class="nm">路径备份3(渐变)</span><span class="pos">x:138.94 y:838 w:10.83 h:10.83</span><span class="pr" style="color:#543EEA">🎨渐变:#543EEA→#00CBE0</span></div>
+  <div class="row"><span class="n">#73</span><span class="nm">作品图标-bg</span><span class="pos">x:227 y:829.5 w:20 h:20</span><span class="pr">#000000 圆角5pt</span></div>
+  <div class="row"><span class="n">#91</span><span class="nm">路径-作品</span><span class="pos">x:229 y:831 w:12.83 h:17.1</span><span class="pr">#7F8892</span></div>
+  <div class="row"><span class="n">#81</span><span class="nm">我的图标-bg</span><span class="pos">x:318.5 y:829.5 w:20 h:20</span><span class="pr">#000000 圆角5pt</span></div>
+  <div class="row"><span class="n">#96</span><span class="nm">路径-我的</span><span class="pos">x:320.5 y:842.61 w:16.2 h:5.89</span><span class="pr">#7F8892</span></div>
+  <div class="row"><span class="n">#98</span><span class="nm">Tab-首页</span><span class="pos">x:35 y:851.5 w:23 h:15</span><span class="pr">苹方-简 常规体 11pt 居中 #7F8892</span></div>
+  <div class="row"><span class="n">#100</span><span class="nm">Tab-创作区(选中)</span><span class="pos">x:121.5 y:851.5 w:34.5 h:15</span><span class="pr" style="color:#00CBE0">苹方-简 常规体 11pt 居中 #00CBE0</span></div>
+  <div class="row"><span class="n">#97</span><span class="nm">Tab-作品区</span><span class="pos">x:219 y:851.5 w:34.5 h:15</span><span class="pr">苹方-简 常规体 11pt 居中 #7F8892</span></div>
+  <div class="row"><span class="n">#99</span><span class="nm">Tab-我的</span><span class="pos">x:317 y:851.5 w:23 h:15</span><span class="pr">苹方-简 常规体 11pt 居中 #7F8892</span></div>
+  <div class="row"><span class="n">#101</span><span class="nm">HomeIndicator</span><span class="pos">x:120.5 y:893 w:134 h:5</span><span class="pr">#FFFFFF 圆角2.5pt</span></div>
+</div><!-- /info -->
+</body>
+</html>
