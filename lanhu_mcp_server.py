@@ -3129,6 +3129,99 @@ class LanhuExtractor:
             for item in sketch_data['info']:
                 find_slices(item)
 
+        # Photoshop：蓝湖在根节点 type=ps，切图登记在 assets[]（isSlice），
+        # 实际 PNG/SVG 地址在对应 id 的图层 images.png_xxxhd / images.svg（与 convert_sketch_to_html 一致）
+        if str(sketch_data.get('type') or '').lower() == 'ps':
+            by_id: dict = {}
+
+            def _index_ps(obj):
+                if not isinstance(obj, dict):
+                    return
+                oid = obj.get('id')
+                if oid is not None:
+                    by_id[oid] = obj
+                for k in ('layers', 'children'):
+                    for c in (obj.get(k) or []):
+                        if isinstance(c, dict):
+                            _index_ps(c)
+
+            board = sketch_data.get('board')
+            if isinstance(board, dict):
+                _index_ps(board)
+            for sec in sketch_data.get('info') or []:
+                if isinstance(sec, dict):
+                    _index_ps(sec)
+
+            existing_ids = {s.get('id') for s in slices}
+
+            for asset in sketch_data.get('assets') or []:
+                if not isinstance(asset, dict) or not asset.get('isSlice'):
+                    continue
+                lid = asset.get('id')
+                if lid is None or lid in existing_ids:
+                    continue
+                layer = by_id.get(lid)
+                if not isinstance(layer, dict):
+                    continue
+                imgs = layer.get('images') or {}
+                download_url = imgs.get('png_xxxhd') or imgs.get('svg')
+                if not download_url:
+                    continue
+
+                lw_raw = float(layer.get('width') or 0)
+                lh_raw = float(layer.get('height') or 0)
+                if lw_raw <= 0 or lh_raw <= 0:
+                    bb = asset.get('bounds') or {}
+                    lw_raw = float(bb.get('right', 0)) - float(bb.get('left', 0))
+                    lh_raw = float(bb.get('bottom', 0)) - float(bb.get('top', 0))
+                sc = max(int(slice_scale), 1)
+                logical_w = (lw_raw / sc) if lw_raw > 0 else 1.0
+                logical_h = (lh_raw / sc) if lh_raw > 0 else 1.0
+                logical_w = max(1.0, logical_w)
+                logical_h = max(1.0, logical_h)
+
+                disp_name = asset.get('name') or layer.get('name') or 'slice'
+                size_str = f"{int(round(logical_w))}x{int(round(logical_h))}"
+                slice_info = {
+                    'id': lid,
+                    'name': disp_name,
+                    'type': layer.get('type') or 'ps-slice',
+                    'download_url': download_url,
+                    'size': size_str,
+                    'format': 'png' if imgs.get('png_xxxhd') else 'svg',
+                }
+                if imgs.get('png_xxxhd') and imgs.get('svg'):
+                    slice_info['svg_url'] = imgs['svg']
+
+                if 'left' in layer and 'top' in layer:
+                    slice_info['position'] = {
+                        'x': int(round(float(layer.get('left', 0)))),
+                        'y': int(round(float(layer.get('top', 0)))),
+                    }
+
+                slice_info['layer_path'] = disp_name
+
+                if include_metadata:
+                    md = {'source': 'photoshop', 'asset_id': lid}
+                    if asset.get('scaleType') is not None:
+                        md['scaleType'] = asset.get('scaleType')
+                    slice_info['metadata'] = md
+
+                if imgs.get('png_xxxhd'):
+                    scale_urls = self._build_scale_urls(
+                        download_url, logical_w, logical_h, int(slice_scale)
+                    )
+                    if scale_urls:
+                        slice_info['scale_urls'] = scale_urls
+                    slice_info['logical_size'] = {
+                        'width': int(round(logical_w)),
+                        'height': int(round(logical_h)),
+                        'note': f'1x logical px; PS slice; sliceScale={slice_scale}',
+                    }
+
+                slices.append(slice_info)
+                existing_ids.add(lid)
+
         return {
             'design_id': image_id,
             'design_name': result['name'],
